@@ -1,0 +1,6 @@
+.vscode
+.idea
+*.o
+*.s
+*.pdf
+
