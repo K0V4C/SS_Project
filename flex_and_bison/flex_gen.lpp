@@ -1,0 +1,107 @@
+%{
+/* definitions */
+#include <iostream>
+#include "bison_gen.tab.hpp"
+#include "../include/parser.hpp"
+
+%}
+
+/* rules for tokens */
+
+%option nodefault
+%option noyywrap
+%option nounput
+
+symbol     [a-zA-Z_][a-zA-Z0-9_]*
+whitespace [ \t\r]*
+new_line   [\n]
+reg        %r([0-9]|1[0-5])
+string     \".*\"
+
+number_10  [0-9]*
+number_16  0x[0-9A-F]*
+
+%%
+
+{whitespace} ; // Whitespace
+
+#.*        {std::cout << "COMMENT ";}
+
+";"         {std::cout << "SEMYCOLON ";}
+":"         {std::cout << "COLON ";}
+","         {std::cout << "COMMA ";}
+
+
+\.global    {std::cout << "GLOBAL ";}
+\.extern    {std::cout << "EXTERN ";}
+\.section   {std::cout << "SECTION ";}
+\.word      {std::cout << "WORD ";}
+\.skip      {std::cout << "SKIP ";}
+\.ascii     {std::cout << "ASCII ";}
+\.equ       {std::cout << "EQU ";}
+\.end       {std::cout << "END ";}
+
+halt        {std::cout << "HALT ";}
+
+int         {std::cout << "INT ";}
+iret        {std::cout << "IRET ";}
+
+call        {std::cout << "CALL ";}
+ret         {std::cout << "RET ";}
+
+jmp         {std::cout << "JMP ";}
+beq         {std::cout << "BEQ ";}
+bne         {std::cout << "BNE ";}
+bgt         {std::cout << "BGT ";}
+
+push        {std::cout << "PUSH ";}
+pop         {std::cout << "POP ";}
+
+xchg        {std::cout << "XCHG ";}
+
+add         {std::cout << "ADD ";}
+sub         {std::cout << "SUB ";}
+mul         {std::cout << "MUL ";}
+div         {std::cout << "DIV ";}
+
+not         {std::cout << "NOT ";}
+and         {std::cout << "AND ";}
+or          {std::cout << "OR ";}
+xor         {std::cout << "XOR ";}
+
+shl         {std::cout << "SHL ";}
+shr         {std::cout << "SHR ";}
+
+ld          {std::cout << "LD ";}
+st          {std::cout << "ST ";}
+
+csrrd       {std::cout << "CSRRD ";}
+csrrw       {std::cout << "CSRRW ";}
+
+"+"         {std::cout << "PLUS ";}
+"-"         {std::cout << "MINUS ";}
+"*"         {std::cout << "MULTIPLY ";}
+"/"         {std::cout << "DEVIDE ";}
+"["         {std::cout << "LEFT_BRACKET ";}
+"]"         {std::cout << "RIGHT_BRACKET ";}
+"$"         {std::cout << "DOLLAR_SIGN ";}
+
+{symbol}    {std::cout << "IDENTIFIER ";}
+{new_line}  {std::cout << "\n";}
+{reg}       {std::cout << "REGISTER ";}
+%status     {std::cout << "STATUS_REG ";}
+%handler    {std::cout << "HANDLER_REG ";}
+%cause      {std::cout << "CAUSE_REG ";}
+%sp         {std::cout << "SP_REG ";}
+
+{number_10} {std::cout << "DECIMAL_NUM ";}
+{number_16} {std::cout << "HEX_NUM ";}
+
+{string}    {std::cout << "STRING ";}
+
+.         {std::cout << "ERROR ";}
+
+%%
+/* C code and functions here */
+/* Driver function used fot testing, uncomment if u only want to use Lexer */
+//int main() { while(yylex());}

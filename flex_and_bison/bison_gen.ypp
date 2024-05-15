@@ -1,0 +1,48 @@
+%{
+#include <iostream>
+#include <string>
+#include <stdint.h>
+#include "../include/parser.hpp"
+
+extern int yylex();
+extern int yyparse();
+extern FILE* yyin;
+
+void yyerror(const char *s);
+%}
+
+
+%union {
+
+    int32_t num;
+    char sym;
+}
+
+%token COMMENT
+%token SEMYCOLON COLON COMMA
+%token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END
+%token HALT
+%token INT IRET
+%token CALL RET 
+%token JMP BEQ BNE BGT
+%token PUSH POP
+%token XCHG
+%token ADD SUB MUL DIV
+%token NOT AND OR XOR
+%token SHL SHR
+%token LD ST
+%token CSRRD CSRRW
+%token PLUS MINUS MULTIPLY DEVIDE LEFT_BRACKER RIGHT_BRACKET
+%token DOLLAR_SIGN
+%token IDENTIFIER
+%token REGISTER
+%token STATUS_REG HANDLER_REG CAUSE_REG SP_REG
+%token DECIMAL_NUM HEX_NUM
+%token STRING
+%token END_OF_FILE
+
+%%
+
+label: IDENTIFIER COLON;
+
+%%
