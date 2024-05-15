@@ -3,10 +3,10 @@ LEXER = flex
 BISON = bison
 
 PFLAGS = -d -t
-CFLAGS = -Iinclude -I. -std=c++17 -Ifl
+CFLAGS = -Iinc -I. -std=c++17 -Ifl
 
-BISON_FILE = flex_and_bison/bison_gen.ypp
-FLEX_FILE = flex_and_bison/flex_gen.lpp
+BISON_FILE = misc/bison_gen.ypp
+FLEX_FILE = misc/flex_gen.lpp
 
 SOURCES = $(wildcard *.cpp) $(wildcard src/*.cpp) $(wildcard *.c)
 

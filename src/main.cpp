@@ -1,5 +1,5 @@
-#include "../include/parser.hpp"
-#include "../include/env.hpp"
+#include "../inc/parser.hpp"
+#include "../inc/env.hpp"
 #include <iostream>
 
 

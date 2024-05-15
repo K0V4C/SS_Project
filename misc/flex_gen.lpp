@@ -2,7 +2,7 @@
 /* definitions */
 #include <iostream>
 #include "bison_gen.tab.hpp"
-#include "../include/parser.hpp"
+#include "../inc/parser.hpp"
 
 %}
 
