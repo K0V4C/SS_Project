@@ -78,7 +78,7 @@ ld          {std::string new_token("LD"); Parser::log_token(new_token); return L
 st          {std::string new_token("ST"); Parser::log_token(new_token); return ST;}
 
 csrrd       {std::string new_token("CSRRD"); Parser::log_token(new_token); return CSRRD;}
-csrrw       {std::string new_token("CSRRW"); Parser::log_token(new_token); return CSRRW;}
+csrwr       {std::string new_token("CSRRW"); Parser::log_token(new_token); return CSRWR;}
 
 "+"         {std::string new_token("PLUS"); Parser::log_token(new_token); return PLUS;}
 "-"         {std::string new_token("MINUS"); Parser::log_token(new_token); return MINUS;}

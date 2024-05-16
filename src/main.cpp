@@ -17,7 +17,7 @@ auto main(int argc, char** argv) -> int {
     Parser parser(file_name);
 
     parser.parse();
-
+    Parser::display_log();
 
     // std::cout << "TEST\n\n";
 
