@@ -3,9 +3,16 @@
 #include <string>
 #include <vector>
 #include <stdint.h>
+#include <memory>
 
 #include "../inc/parser.hpp"
 #include "../inc/collector.hpp"
+
+#include "../inc/asembler.hpp"
+#include "../inc/asm_actions/actions.hpp"
+#include "../inc/asm_actions/directive_actions.hpp"
+#include "../inc/asm_actions/instruction_actions.hpp"
+#include "../inc/asm_actions/label_actions.hpp"
 
 extern int yylex();
 extern int yyparse();
@@ -256,11 +263,14 @@ global_directive:
 extern_directive:
     EXTERN symbols {
         auto& c = Collector::get_instance();
-            auto arr = c.get_symbol_list();
+        auto arr = c.get_symbol_list();
+        
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_extern>(arr)
+        );
 
-            for(auto g : arr) {
-                std::cout << g << std::endl;
-            }
+        c.clear_symbol_list();
+
     }
 ;
 section_directive:

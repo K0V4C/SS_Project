@@ -1,6 +1,6 @@
 #include "../inc/parser.hpp"
 #include "../inc/env.hpp"
-#include "../inc/collector.hpp"
+#include "../inc/asembler.hpp"
 #include <iostream>
 
 
@@ -19,15 +19,11 @@ auto main(int argc, char** argv) -> int {
     parser.parse();
     Parser::display_log();
 
-    // std::cout << "TEST\n\n";
-
-    // auto& c = Collector::get_instance();
-    // auto arr = c.get_symbol_list();
-
-    // for(auto g : arr) {
-    //     std::cout << g << std::endl;
-    // }
-
+    
+    Asembler asm_control;
+    
+    asm_control.asemble();
+    
 
     return 0;
 }

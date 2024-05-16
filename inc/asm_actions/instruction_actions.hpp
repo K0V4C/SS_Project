@@ -1,0 +1,6 @@
+#ifndef _INSTRUCTION_ACTIONS_HPP
+#define _INSTRUCTION_ACTIONS_HPP
+
+#include "actions.hpp"
+
+#endif // _INSTRUCTION_ACTIONS_HPP
