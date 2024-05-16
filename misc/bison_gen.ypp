@@ -35,7 +35,7 @@ void yyerror(const char *s);
 
 %token<sym> IDENTIFIER
 %token REGISTER
-%token STATUS_REG HANDLER_REG CAUSE_REG SP_REG
+%token STATUS_REG HANDLER_REG CAUSE_REG SP_REG PC_REG
 %token DECIMAL_NUM HEX_NUM
 
 %token STRING
@@ -83,15 +83,21 @@ operand:
 |   DOLLAR_SIGN IDENTIFIER {;}
 |   literal {;}
 |   IDENTIFIER {;}
-|   REGISTER {;}
-|   LEFT_BRACKET REGISTER RIGHT_BRACKET {;}
-|   LEFT_BRACKET REGISTER PLUS literal RIGHT_BRACKET {;}
-|   LEFT_BRACKET REGISTER PLUS IDENTIFIER RIGHT_BRACKET {;}
+|   gpr {;}
+|   LEFT_BRACKET gpr RIGHT_BRACKET {;}
+|   LEFT_BRACKET gpr PLUS literal RIGHT_BRACKET {;}
+|   LEFT_BRACKET gpr PLUS IDENTIFIER RIGHT_BRACKET {;}
+;
+
+branch_operand:
+    IDENTIFIER
+|   literal
 ;
 
 gpr:
     REGISTER
 |   SP_REG
+|   PC_REG
 ;
 
 csr:
@@ -103,11 +109,29 @@ csr:
 instruction:
     halt_instruction
 |   int_instruction
+|   iret_instruction
 |   call_instruction
+|   ret_instruction
+|   jmp_instruction
+|   beq_instruction
+|   bne_instruction
+|   bgt_instruction
 |   push_instruction
 |   pop_instruction
+|   xchg_instrucion
+|   add_instruction
+|   sub_instrucion
+|   mul_instruction
+|   div_instruction
+|   not_instruction
+|   and_instruction
+|   or_instruction
+|   xor_instruction
+|   shl_instruction
+|   shr_instruction
 |   ld_instrucion
 |   st_instruction
+|   csrrd_instruction
 |   csrwr_instruction
 ;
 
@@ -119,8 +143,32 @@ int_instruction:
     INT 
 ;
 
+iret_instruction:
+    IRET
+;
+
 call_instruction:
-    CALL operand
+    CALL branch_operand
+;
+
+ret_instruction:
+    RET
+;
+
+jmp_instruction:
+    JMP branch_operand
+;
+
+beq_instruction:
+    BEQ gpr COMMA gpr COMMA branch_operand
+;
+
+bne_instruction:
+    BNE gpr COMMA gpr COMMA branch_operand
+;
+
+bgt_instruction:
+    BGT gpr COMMA gpr branch_operand
 ;
 
 push_instruction:
@@ -131,12 +179,60 @@ pop_instruction:
     POP gpr
 ;
 
+xchg_instrucion:
+    XCHG gpr COMMA gpr
+;
+
+add_instruction:
+    ADD gpr COMMA gpr
+;
+
+sub_instrucion:
+    SUB gpr COMMA gpr
+;
+
+mul_instruction:
+    MUL gpr COMMA gpr
+;
+
+div_instruction:
+    DIV gpr COMMA gpr
+;
+
+not_instruction:
+    NOT gpr
+;
+
+and_instruction:
+    AND gpr COMMA gpr
+;
+
+or_instruction:
+    OR gpr COMMA gpr
+;
+
+xor_instruction:
+    XOR gpr COMMA gpr
+;
+
+shl_instruction:
+    SHL gpr COMMA gpr
+;
+
+shr_instruction:
+   SHR gpr COMMA gpr
+;
+
 ld_instrucion:
     LD operand COMMA gpr
 ;
 
 st_instruction:
     ST gpr COMMA operand
+;
+
+csrrd_instruction:
+    CSRRD csr COMMA gpr
 ;
 
 csrwr_instruction:
@@ -175,13 +271,13 @@ word_directive:
 |   WORD literal_list
 ;
 skip_directive:
-    SKIP DECIMAL_NUM {/*mora da se doradi*/}
+    SKIP literal {/*mora da se doradi*/}
 ;
 ascii_directive:
     ASCII STRING {;}
 ;
 equ_directive:
-    EQU IDENTIFIER {/*Mora da se doradi*/}
+    EQU IDENTIFIER COMMA {/*Mora da se doradi*/}
 ;
 end_directive:
     END {;}

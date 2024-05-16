@@ -99,6 +99,7 @@ csrwr       {std::string new_token("CSRRW"); Parser::log_token(new_token); retur
 %handler    {std::string new_token("HANDLER_REG"); Parser::log_token(new_token); return HANDLER_REG;}
 %cause      {std::string new_token("CAUSE_REG"); Parser::log_token(new_token); return CAUSE_REG;}
 %sp         {std::string new_token("SP_REG"); Parser::log_token(new_token); return SP_REG;}
+%pc         {std::string new_token("PC_REG"); Parser::log_token(new_token); return PC_REG;}
 
 {number_10} {std::string new_token("DECIMAL_NUM"); Parser::log_token(new_token); return DECIMAL_NUM;}
 {number_16} {std::string new_token("HEX_NUM"); Parser::log_token(new_token); return HEX_NUM;}
