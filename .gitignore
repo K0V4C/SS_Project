@@ -5,3 +5,5 @@
 *.pdf
 *.out
 *.txt
+bison_gen*
+lex*
