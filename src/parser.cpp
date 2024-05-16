@@ -6,6 +6,8 @@
 #include <ostream>
 
 
+std::vector<std::string> Parser::token_log = std::vector<std::string>();
+
 void yyerror(const char *s) {
   Parser::yyerror(std::string(s));
 }
@@ -29,7 +31,27 @@ auto Parser::parse() -> int32_t {
     return 0;
 }
 
+
+auto Parser::log_token(std::string s) -> void {
+    token_log.push_back(s);
+}
+
+auto Parser::display_log() -> void {
+
+    std::cout << "==========PARSED FILE LOG============" << std::endl;
+
+    for(auto& token : token_log) {
+        std::cout << token + " ";
+        if(token == std::string("NEW_LINE")) std::cout << std::endl;
+    }
+
+    std::cout << "\n\n===============<END>=================" << std::endl;
+
+}
+
 auto Parser::yyerror(const std::string& err) -> void {
+
+    Parser::display_log();
 
     std::cerr << "Parser error! -> " << err <<std::endl;  
     exit(-1);

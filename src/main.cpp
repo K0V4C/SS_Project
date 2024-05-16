@@ -1,5 +1,6 @@
 #include "../inc/parser.hpp"
 #include "../inc/env.hpp"
+#include "../inc/collector.hpp"
 #include <iostream>
 
 
@@ -16,6 +17,17 @@ auto main(int argc, char** argv) -> int {
     Parser parser(file_name);
 
     parser.parse();
+
+
+    // std::cout << "TEST\n\n";
+
+    // auto& c = Collector::get_instance();
+    // auto arr = c.get_symbol_list();
+
+    // for(auto g : arr) {
+    //     std::cout << g << std::endl;
+    // }
+
 
     return 0;
 }

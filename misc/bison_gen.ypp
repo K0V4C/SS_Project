@@ -1,8 +1,11 @@
 %{
 #include <iostream>
 #include <string>
+#include <vector>
 #include <stdint.h>
+
 #include "../inc/parser.hpp"
+#include "../inc/collector.hpp"
 
 extern int yylex();
 extern int yyparse();
@@ -13,25 +16,24 @@ void yyerror(const char *s);
 
 
 %union {
-
     int32_t num;
-    char sym;
+    char* sym;
 }
 
 %token COMMENT
 
-%token SEMYCOLON COLON COMMA
+%token SEMYCOLON COLON COMMA NEW_LINE
 
 %token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END
 
 %token HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP XCHG
 %token ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRRW
 
-%token PLUS MINUS MULTIPLY DEVIDE LEFT_BRACKER RIGHT_BRACKET
+%token PLUS MINUS MULTIPLY DIVISION LEFT_BRACKET RIGHT_BRACKET
 
 %token DOLLAR_SIGN
 
-%token IDENTIFIER
+%token<sym> IDENTIFIER
 %token REGISTER
 %token STATUS_REG HANDLER_REG CAUSE_REG SP_REG
 %token DECIMAL_NUM HEX_NUM
@@ -41,6 +43,72 @@ void yyerror(const char *s);
 
 %%
 
-label: IDENTIFIER COLON;
+program:
+| program label NEW_LINE
+| program symbols
+| program END_OF_FILE
+| program directive
+| program NEW_LINE
+;
+
+label:
+    IDENTIFIER COLON {};
+
+symbols:
+    IDENTIFIER {
+        auto& c = Collector::get_instance();
+        std::string new_symbol($1);
+        c.append_symbol(new_symbol);
+    }
+|   symbols COMMA IDENTIFIER {
+    auto& c = Collector::get_instance();
+    std::string new_symbol($3);
+    c.append_symbol(new_symbol);
+};
+
+directive:
+    global_directive
+|   extern_directive
+|   section_directive
+|   word_directive
+|   skip_directive
+|   ascii_directive
+|   equ_directive
+|   end_directive
+;
+
+global_directive:
+    GLOBAL symbols {;}
+;
+extern_directive:
+    EXTERN symbols{
+        auto& c = Collector::get_instance();
+            auto arr = c.get_symbol_list();
+
+            for(auto g : arr) {
+                std::cout << g << std::endl;
+            }
+    }
+;
+section_directive:
+    SECTION IDENTIFIER
+;
+word_directive:
+    WORD symbols {/* OVA mora da se doraid*/}
+;
+skip_directive:
+    SKIP DECIMAL_NUM {/*mora da se doradi*/}
+;
+ascii_directive:
+    ASCII STRING {;}
+;
+equ_directive:
+    EQU IDENTIFIER {/*Mora da se doradi*/}
+;
+end_directive:
+    END NEW_LINE {;}
+;
+
+
 
 %%

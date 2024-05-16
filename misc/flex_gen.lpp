@@ -1,6 +1,8 @@
 %{
 /* definitions */
 #include <iostream>
+#include <string>
+
 #include "bison_gen.tab.hpp"
 #include "../inc/parser.hpp"
 
@@ -25,81 +27,87 @@ number_16  0x[0-9A-F]*
 
 {whitespace} ; // Whitespace
 
-#.*        {std::cout << "COMMENT ";}
+#.*        {std::string new_token("COMMENT"); Parser::log_token(new_token);}
 
-";"         {std::cout << "SEMYCOLON ";}
-":"         {std::cout << "COLON ";}
-","         {std::cout << "COMMA ";}
+";"         {std::string new_token("SEMYCOLON"); Parser::log_token(new_token); return SEMYCOLON;}
+":"         {std::string new_token("COLON"); Parser::log_token(new_token); return COLON;}
+","         {std::string new_token("COMMA"); Parser::log_token(new_token); return COMMA;}
 
 
-\.global    {std::cout << "GLOBAL ";}
-\.extern    {std::cout << "EXTERN ";}
-\.section   {std::cout << "SECTION ";}
-\.word      {std::cout << "WORD ";}
-\.skip      {std::cout << "SKIP ";}
-\.ascii     {std::cout << "ASCII ";}
-\.equ       {std::cout << "EQU ";}
-\.end       {std::cout << "END ";}
+\.global    {std::string new_token("GLOBAL"); Parser::log_token(new_token); return GLOBAL;}
+\.extern    {std::string new_token("EXTERN"); Parser::log_token(new_token); return EXTERN;}
+\.section   {std::string new_token("SECTION"); Parser::log_token(new_token); return SECTION;}
+\.word      {std::string new_token("WORD"); Parser::log_token(new_token); return WORD;}
+\.skip      {std::string new_token("SKIP"); Parser::log_token(new_token); return SKIP;}
+\.ascii     {std::string new_token("ASCII"); Parser::log_token(new_token); return ASCII;}
+\.equ       {std::string new_token("EQU"); Parser::log_token(new_token); return EQU;}
+\.end       {std::string new_token("END"); Parser::log_token(new_token); return END;}
 
-halt        {std::cout << "HALT ";}
+halt        {std::string new_token("HALT"); Parser::log_token(new_token); return HALT;}
 
-int         {std::cout << "INT ";}
-iret        {std::cout << "IRET ";}
+int         {std::string new_token("INT"); Parser::log_token(new_token); return INT;}
+iret        {std::string new_token("IRET"); Parser::log_token(new_token); return IRET;}
 
-call        {std::cout << "CALL ";}
-ret         {std::cout << "RET ";}
+call        {std::string new_token("CALL"); Parser::log_token(new_token); return CALL;}
+ret         {std::string new_token("RET"); Parser::log_token(new_token); return RET;}
 
-jmp         {std::cout << "JMP ";}
-beq         {std::cout << "BEQ ";}
-bne         {std::cout << "BNE ";}
-bgt         {std::cout << "BGT ";}
+jmp         {std::string new_token("JMP"); Parser::log_token(new_token); return JMP;}
+beq         {std::string new_token("BEQ"); Parser::log_token(new_token); return BEQ;}
+bne         {std::string new_token("BNE"); Parser::log_token(new_token); return BNE;}
+bgt         {std::string new_token("BGT"); Parser::log_token(new_token); return BGT;}
 
-push        {std::cout << "PUSH ";}
-pop         {std::cout << "POP ";}
+push        {std::string new_token("PUSH"); Parser::log_token(new_token); return PUSH;}
+pop         {std::string new_token("POP"); Parser::log_token(new_token); return POP;}
 
-xchg        {std::cout << "XCHG ";}
+xchg        {std::string new_token("XCHG"); Parser::log_token(new_token); return XCHG;}
 
-add         {std::cout << "ADD ";}
-sub         {std::cout << "SUB ";}
-mul         {std::cout << "MUL ";}
-div         {std::cout << "DIV ";}
+add         {std::string new_token("ADD"); Parser::log_token(new_token); return ADD;}
+sub         {std::string new_token("SUB"); Parser::log_token(new_token); return SUB;}
+mul         {std::string new_token("MUL"); Parser::log_token(new_token); return MUL;}
+div         {std::string new_token("DIV"); Parser::log_token(new_token); return DIV;}
 
-not         {std::cout << "NOT ";}
-and         {std::cout << "AND ";}
-or          {std::cout << "OR ";}
-xor         {std::cout << "XOR ";}
+not         {std::string new_token("NOT"); Parser::log_token(new_token); return NOT;}
+and         {std::string new_token("AND"); Parser::log_token(new_token); return AND;}
+or          {std::string new_token("OR"); Parser::log_token(new_token); return OR;}
+xor         {std::string new_token("XOR"); Parser::log_token(new_token); return XOR;}
 
-shl         {std::cout << "SHL ";}
-shr         {std::cout << "SHR ";}
+shl         {std::string new_token("SHL"); Parser::log_token(new_token); return SHL;}
+shr         {std::string new_token("SHR"); Parser::log_token(new_token); return SHR;}
 
-ld          {std::cout << "LD ";}
-st          {std::cout << "ST ";}
+ld          {std::string new_token("LD"); Parser::log_token(new_token); return LD;}
+st          {std::string new_token("ST"); Parser::log_token(new_token); return ST;}
 
-csrrd       {std::cout << "CSRRD ";}
-csrrw       {std::cout << "CSRRW ";}
+csrrd       {std::string new_token("CSRRD"); Parser::log_token(new_token); return CSRRD;}
+csrrw       {std::string new_token("CSRRW"); Parser::log_token(new_token); return CSRRW;}
 
-"+"         {std::cout << "PLUS ";}
-"-"         {std::cout << "MINUS ";}
-"*"         {std::cout << "MULTIPLY ";}
-"/"         {std::cout << "DEVIDE ";}
-"["         {std::cout << "LEFT_BRACKET ";}
-"]"         {std::cout << "RIGHT_BRACKET ";}
-"$"         {std::cout << "DOLLAR_SIGN ";}
+"+"         {std::string new_token("PLUS"); Parser::log_token(new_token); return PLUS;}
+"-"         {std::string new_token("MINUS"); Parser::log_token(new_token); return MINUS;}
+"*"         {std::string new_token("MULTIPLY"); Parser::log_token(new_token); return MULTIPLY;}
+"/"         {std::string new_token("DIVISON"); Parser::log_token(new_token); return DIVISION;}
+"["         {std::string new_token("LEFT_BRACKET"); Parser::log_token(new_token); return LEFT_BRACKET;}
+"]"         {std::string new_token("RIGHT_BRACKET"); Parser::log_token(new_token); return RIGHT_BRACKET;}
+"$"         {std::string new_token("DOLLAR_SIGN"); Parser::log_token(new_token); return DOLLAR_SIGN;}
 
-{symbol}    {std::cout << "IDENTIFIER ";}
-{new_line}  {std::cout << "\n";}
-{reg}       {std::cout << "REGISTER ";}
-%status     {std::cout << "STATUS_REG ";}
-%handler    {std::cout << "HANDLER_REG ";}
-%cause      {std::cout << "CAUSE_REG ";}
-%sp         {std::cout << "SP_REG ";}
+{symbol}    {
+                std::string new_token("IDENTIFIER"); Parser::log_token(new_token);
+                yylval.sym = yytext;
+                return IDENTIFIER;
+            }
+{new_line}  {std::string new_token("NEW_LINE"); Parser::log_token(new_token); return NEW_LINE;}
+{reg}       {std::string new_token("REGISTER"); Parser::log_token(new_token); return REGISTER;}
+%status     {std::string new_token("STATUS_REG"); Parser::log_token(new_token); return STATUS_REG;}
+%handler    {std::string new_token("HANDLER_REG"); Parser::log_token(new_token); return HANDLER_REG;}
+%cause      {std::string new_token("CAUSE_REG"); Parser::log_token(new_token); return CAUSE_REG;}
+%sp         {std::string new_token("SP_REG"); Parser::log_token(new_token); return SP_REG;}
 
-{number_10} {std::cout << "DECIMAL_NUM ";}
-{number_16} {std::cout << "HEX_NUM ";}
+{number_10} {std::string new_token("DECIMAL_NUM"); Parser::log_token(new_token); return DECIMAL_NUM;}
+{number_16} {std::string new_token("HEX_NUM"); Parser::log_token(new_token); return HEX_NUM;}
 
-{string}    {std::cout << "STRING ";}
+{string}    {std::string new_token("STRING"); Parser::log_token(new_token); return STRING;}
 
-.         {std::cout << "ERROR ";}
+<<EOF>>     {std::string new_token("END_OF_FILE"); Parser::log_token(new_token); return END_OF_FILE;}
+
+.           {std::string new_token("ERROR"); Parser::log_token(new_token);}
 
 %%
 /* C code and functions here */
