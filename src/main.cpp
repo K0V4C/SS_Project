@@ -15,10 +15,12 @@ auto main(int argc, char** argv) -> int {
 
     std::string file_name = std::string("main.s");
     Parser parser(file_name);
-
+    try {
     parser.parse();
     Parser::display_log();
-
+    } catch(...) {
+        Parser::display_log();
+    }
     
     Asembler asm_control;
     

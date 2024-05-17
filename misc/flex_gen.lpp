@@ -2,6 +2,7 @@
 /* definitions */
 #include <iostream>
 #include <string>
+#include <string.h>
 
 #include "bison_gen.tab.hpp"
 #include "../inc/parser.hpp"
@@ -22,7 +23,7 @@ string     \".*\"
 
 number_10  [0-9]*
 number_16  0x[0-9A-F]*
-
+oi(s, 0, 16);
 %%
 
 {whitespace} ; // Whitespace
@@ -94,15 +95,36 @@ csrwr       {std::string new_token("CSRRW"); Parser::log_token(new_token); retur
                 return IDENTIFIER;
             }
 {new_line}  {std::string new_token("NEW_LINE"); Parser::log_token(new_token); return NEW_LINE;}
-{reg}       {std::string new_token("REGISTER"); Parser::log_token(new_token); return REGISTER;}
+{reg}       {
+                std::string new_token("REGISTER");
+                Parser::log_token(new_token);
+                yylval.num = std::stoi(
+                    std::string(yytext).substr(2)
+                ); 
+                return REGISTER;
+            }
 %status     {std::string new_token("STATUS_REG"); Parser::log_token(new_token); return STATUS_REG;}
 %handler    {std::string new_token("HANDLER_REG"); Parser::log_token(new_token); return HANDLER_REG;}
 %cause      {std::string new_token("CAUSE_REG"); Parser::log_token(new_token); return CAUSE_REG;}
 %sp         {std::string new_token("SP_REG"); Parser::log_token(new_token); return SP_REG;}
 %pc         {std::string new_token("PC_REG"); Parser::log_token(new_token); return PC_REG;}
 
-{number_10} {std::string new_token("DECIMAL_NUM"); Parser::log_token(new_token); return DECIMAL_NUM;}
-{number_16} {std::string new_token("HEX_NUM"); Parser::log_token(new_token); return HEX_NUM;}
+{number_10} {
+                std::string new_token("DECIMAL_NUM");
+                Parser::log_token(new_token);
+                yylval.num = static_cast<int32_t>(std::stol(yytext));
+                return DECIMAL_NUM;
+            }
+{number_16} {
+                std::string new_token("HEX_NUM");
+                Parser::log_token(new_token);
+                yylval.num = static_cast<int32_t> (
+                    std::stol(
+                        std::string(yytext).substr(2), 0, 16
+                    )
+                );
+                return HEX_NUM;
+            }
 
 {string}    {std::string new_token("STRING"); Parser::log_token(new_token); return STRING;}
 

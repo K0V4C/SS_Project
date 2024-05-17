@@ -4,7 +4,8 @@
 #include <vector>
 #include <stdint.h>
 #include <memory>
-
+#include <stdint.h>
+#include <variant>
 #include "../inc/parser.hpp"
 #include "../inc/collector.hpp"
 
@@ -41,12 +42,15 @@ void yyerror(const char *s);
 %token DOLLAR_SIGN
 
 %token<sym> IDENTIFIER
-%token REGISTER
+%token<num> REGISTER
 %token STATUS_REG HANDLER_REG CAUSE_REG SP_REG PC_REG
-%token DECIMAL_NUM HEX_NUM
+%token<num> DECIMAL_NUM
+%token<num> HEX_NUM
 
 %token STRING
 %token END_OF_FILE
+
+%type<num> literal
 
 %%
 
@@ -65,24 +69,32 @@ label:
 symbols:
     IDENTIFIER {
         auto& c = Collector::get_instance();
-        std::string new_symbol($1);
-        c.append_symbol(new_symbol);
+        sym_or_lit new_element = std::string($1);
+        c.add_symbol_or_literal(new_element);
     }
 |   symbols COMMA IDENTIFIER {
-    auto& c = Collector::get_instance();
-    std::string new_symbol($3);
-    c.append_symbol(new_symbol);
-}
+        auto& c = Collector::get_instance();
+        sym_or_lit new_element = std::string($3);
+        c.add_symbol_or_literal(new_element);
+    }
 ;
 
 literal:
-    DECIMAL_NUM {;}
-|   HEX_NUM {;}
+    DECIMAL_NUM { $$ = $1;}
+|   HEX_NUM     { $$ = $1;}
 ;
 
 literal_list:
-    literal {;}
-|   literal_list COMMA literal 
+    literal {
+        auto& c = Collector::get_instance();
+        sym_or_lit new_element = $1;
+        c.add_symbol_or_literal(new_element);
+    }
+|   literal_list COMMA literal {
+        auto& c = Collector::get_instance();
+        sym_or_lit new_element = $3;
+        c.add_symbol_or_literal(new_element); 
+    }
 ;
 
 operand:
@@ -97,20 +109,28 @@ operand:
 ;
 
 branch_operand:
-    IDENTIFIER
-|   literal
+    IDENTIFIER {
+        sym_or_lit op;
+        op = std::string($1);
+        Collector::get_instance().set_branch_operand(op);
+    }
+|   literal    {
+        sym_or_lit op;
+        op = $1;
+        Collector::get_instance().set_branch_operand(op);
+    }
 ;
 
 gpr:
-    REGISTER
-|   SP_REG
-|   PC_REG
+    REGISTER {Collector::get_instance().append_gpr($1) ;}
+|   SP_REG   {Collector::get_instance().append_gpr(14) ;}
+|   PC_REG   {Collector::get_instance().append_gpr(15) ;}
 ;
 
 csr:
-    STATUS_REG
-|   HANDLER_REG
-|   CAUSE_REG
+    STATUS_REG  {/*TODO*/}
+|   HANDLER_REG {/*TODO*/}
+|   CAUSE_REG   {/*TODO*/}
 ;
 
 instruction:
@@ -143,107 +163,116 @@ instruction:
 ;
 
 halt_instruction:
-    HALT
+    HALT {/*DONE*/}
 ;
 
 int_instruction:
-    INT 
+    INT {/*DONE*/}
 ;
 
 iret_instruction:
-    IRET
+    IRET {/*DONE*/}
 ;
 
 call_instruction:
-    CALL branch_operand
+    CALL branch_operand {
+        auto& var = Collector::get_instance().get_branch_operand();
+        if ( std::holds_alternative<std::string>(var) ) {
+            std::cout << "CALL SIMBOLCINA" << std::endl;
+        }
+
+        if ( std::holds_alternative<int32_t>(var) ) {
+            std::cout << "CALL LITERALCINA" << std::endl;
+        }
+    }
 ;
 
 ret_instruction:
-    RET
+    RET {/*DONE*/}
 ;
 
 jmp_instruction:
-    JMP branch_operand
+    JMP branch_operand {/*DONE*/}
 ;
 
 beq_instruction:
-    BEQ gpr COMMA gpr COMMA branch_operand
+    BEQ gpr COMMA gpr COMMA branch_operand {/* SHOULD BE DONE */}
 ;
 
 bne_instruction:
-    BNE gpr COMMA gpr COMMA branch_operand
+    BNE gpr COMMA gpr COMMA branch_operand {/* SHOULD BE DONE */}
 ;
 
 bgt_instruction:
-    BGT gpr COMMA gpr branch_operand
+    BGT gpr COMMA gpr branch_operand {/* SHOULD BE DONE */}
 ;
 
 push_instruction:
-    PUSH gpr
+    PUSH gpr {/*DONE*/}
 ;
 
 pop_instruction:
-    POP gpr
+    POP gpr {/*DONE*/}
 ;
 
 xchg_instrucion:
-    XCHG gpr COMMA gpr
+    XCHG gpr COMMA gpr {/*DONE*/}
 ;
 
 add_instruction:
-    ADD gpr COMMA gpr
+    ADD gpr COMMA gpr {/*DONE*/}
 ;
 
 sub_instrucion:
-    SUB gpr COMMA gpr
+    SUB gpr COMMA gpr {/*DONE*/}
 ;
 
 mul_instruction:
-    MUL gpr COMMA gpr
+    MUL gpr COMMA gpr {/*DONE*/}
 ;
 
 div_instruction:
-    DIV gpr COMMA gpr
+    DIV gpr COMMA gpr {/*DONE*/}
 ;
 
 not_instruction:
-    NOT gpr
+    NOT gpr {/*DONE*/}
 ;
 
 and_instruction:
-    AND gpr COMMA gpr
+    AND gpr COMMA gpr {/*DONE*/}
 ;
 
 or_instruction:
-    OR gpr COMMA gpr
+    OR gpr COMMA gpr {/*DONE*/}
 ;
 
 xor_instruction:
-    XOR gpr COMMA gpr
+    XOR gpr COMMA gpr {/*DONE*/}
 ;
 
 shl_instruction:
-    SHL gpr COMMA gpr
+    SHL gpr COMMA gpr {/*DONE*/}
 ;
 
 shr_instruction:
-   SHR gpr COMMA gpr
+   SHR gpr COMMA gpr {/*DONE*/}
 ;
 
 ld_instrucion:
-    LD operand COMMA gpr
+    LD operand COMMA gpr {/*HELL*/}
 ;
 
 st_instruction:
-    ST gpr COMMA operand
+    ST gpr COMMA operand {/*HELL*/}
 ;
 
 csrrd_instruction:
-    CSRRD csr COMMA gpr
+    CSRRD csr COMMA gpr {/* NOT DONE YET */}
 ;
 
 csrwr_instruction:
-    CSRWR gpr COMMA csr 
+    CSRWR gpr COMMA csr {/* NOT DONE YET */}
 ;
 
 directive:
@@ -263,31 +292,39 @@ global_directive:
 extern_directive:
     EXTERN symbols {
         auto& c = Collector::get_instance();
-        auto arr = c.get_symbol_list();
+        auto arr = c.get_symbols_and_literals();
         
+        std::vector<std::string> to_send;
+
+        for(auto& e : arr) {
+            if( std::holds_alternative<std::string>(e)) {
+                to_send.push_back(std::get<std::string>(e));
+            }
+        }
+
         Asembler::file_actions.push_back(
-            std::make_unique<directive_extern>(arr)
+            std::make_unique<directive_extern>(to_send)
         );
 
-        c.clear_symbol_list();
+        c.clear_symbols_and_literals();
 
     }
 ;
 section_directive:
-    SECTION IDENTIFIER
+    SECTION IDENTIFIER {/* DONE */}
 ;
 word_directive:
-    WORD symbols {/* OVA mora da se doraid*/}
-|   WORD literal_list
+    WORD symbols {/* DONE */}
+|   WORD literal_list {/* DONE */}
 ;
 skip_directive:
-    SKIP literal {/*mora da se doradi*/}
+    SKIP literal {/* DONE */}
 ;
 ascii_directive:
-    ASCII STRING {;}
+    ASCII STRING {/* NOT DONE */}
 ;
 equ_directive:
-    EQU IDENTIFIER COMMA {/*Mora da se doradi*/}
+    EQU IDENTIFIER COMMA {/* OVO SE PRAVIMO DA NE POSTOJI DUZE VREME*/}
 ;
 end_directive:
     END {;}

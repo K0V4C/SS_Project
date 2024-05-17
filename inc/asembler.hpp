@@ -3,12 +3,23 @@
 
 #include "asm_actions/actions.hpp"
 
+#include <cstdint>
+#include <map>
 #include <memory>
 #include <vector>
 class Asembler {
 public:
 
+    static int32_t line_counter;
+
     static std::vector<std::unique_ptr<action>> file_actions;
+    
+    struct section {
+        std::string name;
+        
+    };
+
+    static std::map<std::string, section> section_list;
 
     Asembler();
 
