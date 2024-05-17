@@ -30,7 +30,7 @@ auto Collector::add_symbol_or_literal(sym_or_lit _new) -> void {
 }
 
 auto Collector::get_symbols_and_literals() -> std::vector<sym_or_lit> {
-    return this->symbols_and_literals;
+return this->symbols_and_literals;
 }
 
 auto Collector::clear_symbols_and_literals() -> void {

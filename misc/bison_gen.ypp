@@ -287,7 +287,24 @@ directive:
 ;
 
 global_directive:
-    GLOBAL symbols {;}
+    GLOBAL symbols {
+        auto& c = Collector::get_instance();
+        auto arr = c.get_symbols_and_literals();
+        
+        std::vector<std::string> to_send;
+
+        for(auto& e : arr) {
+            if( std::holds_alternative<std::string>(e)) {
+                to_send.push_back(std::get<std::string>(e));
+            }
+        }
+
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_global_and_extern>(to_send)
+        );
+
+        c.clear_symbols_and_literals();
+    }
 ;
 extern_directive:
     EXTERN symbols {
@@ -303,7 +320,7 @@ extern_directive:
         }
 
         Asembler::file_actions.push_back(
-            std::make_unique<directive_extern>(to_send)
+            std::make_unique<directive_global_and_extern>(to_send)
         );
 
         c.clear_symbols_and_literals();
@@ -311,14 +328,26 @@ extern_directive:
     }
 ;
 section_directive:
-    SECTION IDENTIFIER {/* DONE */}
+    SECTION IDENTIFIER {
+        auto& c = Collector::get_instance();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_section>(std::string($2))
+        );
+    }
 ;
 word_directive:
     WORD symbols {/* DONE */}
 |   WORD literal_list {/* DONE */}
 ;
 skip_directive:
-    SKIP literal {/* DONE */}
+    SKIP literal {
+        auto& c = Collector::get_instance();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_skip>($2)
+        );
+    }
 ;
 ascii_directive:
     ASCII STRING {/* NOT DONE */}
