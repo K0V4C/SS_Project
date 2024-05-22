@@ -1,6 +1,8 @@
 #include "../inc/parser.hpp"
 #include "../inc/env.hpp"
 #include "../inc/asembler.hpp"
+#include <iostream>
+#include <stdexcept>
 
 auto test_command_line_args(env& obj) -> void {
      
@@ -16,7 +18,7 @@ auto test_parser(std::string file_name) -> void {
     Parser parser(file_name);
     try {
     parser.parse();
-   // Parser::display_log();
+    Parser::display_log();
     } catch(...) {
         Parser::display_log();
     }
@@ -30,9 +32,13 @@ auto main(int argc, char** argv) -> int {
 
     test_parser("main.s");
     
+    try {
     Asembler asm_control;
     asm_control.asemble();
-    
+    } catch (std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
     Asembler::print_section_table();
     Asembler::print_symbol_table();
 

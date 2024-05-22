@@ -8,46 +8,148 @@
 #include "../../inc/asm_actions/directive_actions.hpp"
 #include "../../inc/asembler.hpp"
 #include <cstdint>
+#include <stdexcept>
 
-// EXTERN 
+//
+//
+//      GLOBAL AND EXTERN
+//
+//
+
 // This should init struct needed for extern
 directive_global_and_extern::directive_global_and_extern(std::vector<std::string> symbol_list)
     : symbol_list(symbol_list) {}
 
-auto directive_global_and_extern::execute() -> void {
-    Asembler::symbol_table["EE"] = {};
-    // TODO
+auto directive_global_and_extern::execute() -> void {   
+
+    for(auto& symbol : this->symbol_list) {
+
+        auto it = Asembler::symbol_table.find(symbol);
+
+        // If it exists just set its bind to symbol_bind 
+        if(it != Asembler::symbol_table.end()) { 
+
+            Asembler::symbol_table[symbol].symbol_bind = SYMBOL_BIND::EXTERN;
+
+        } else {
+            
+            Asembler::symbol_table[symbol] = {
+                Asembler::section_counter,
+                0,
+                SYMBOL_TYPE::NOTYP,
+                SYMBOL_BIND::EXTERN,
+                0,
+                symbol
+            };
+        }
+    }
+
 
 } 
 
 directive_global_and_extern::~directive_global_and_extern(){}
 
-// SECTION 
+// 
+//
+//         SECTION DIRECTIVE
+//
+//
 
 directive_section::directive_section(std::string section_name)
     : section_name(section_name){}
 
 auto directive_section::execute() -> void {
-    
-    int32_t next_idx = Asembler::section_table.size() + 1;
+     
+    auto it = Asembler::section_table.find(this->section_name);
 
-    Asembler::section_table[section_name] = {section_name, 
-                                            next_idx,
-                                            std::vector<Asembler::relocation_struct>(),
-                                            Asembler::literal_pool()
-                                            };
+    if(it != Asembler::section_table.end()) {
+        throw std::runtime_error("Section already defined!");
+    }
+
+    Asembler::section_table[section_name] = {
+        section_name // empty relocation table at the start 
+    };
+
+    Asembler::current_section = section_name;
+    Asembler::section_counter = 0; // Starting new section
 }
 
 directive_section::~directive_section() {}
 
-// SKIP 
+// 
+//
+//              SKIP
+//
+//
 
 directive_skip::directive_skip(int32_t skip_leap)
     : skip_leap(skip_leap){}
 
 auto directive_skip::execute() -> void {
-    // TODO:
+
+    // TODO: What is ship is 0?
+    Asembler::section_counter += this->skip_leap; // Add offset reserved
 }
 
 directive_skip::~directive_skip(){}
+
+//
+//
+//       WORD
+//
+//
+
+directive_word::directive_word(std::vector<std::variant<std::string, int32_t>> symbol_list)
+    : symbols_and_literals(symbol_list){}
+
+auto directive_word::execute() -> void {
+    // TODO:
+}
+
+directive_word::~directive_word(){}
+
+//
+//
+//      ASCII
+//
+//
+directive_ascii::directive_ascii(std::string str)
+    : ascii_string(str) {}
+
+auto directive_ascii::execute() -> void {
+    // TODO:
+}
+
+directive_ascii::~directive_ascii(){}
+
+
+//
+//
+//      EQU
+//
+//
+directive_equ::directive_equ(std::vector<std::variant<std::string,int32_t>> list)
+    : symbols_and_literals(list) {}
+
+auto directive_equ::execute() -> void {
+    // TODO:
+}
+
+directive_equ::~directive_equ(){}
+
+//
+//
+//         END 
+//
+//
+
+directive_end::directive_end(){}
+
+auto directive_end::execute() -> void {
+    throw std::runtime_error("END OF THE FILE HIT");
+}
+
+directive_end::~directive_end(){}
+
+
 

@@ -20,23 +20,27 @@ public:
     ~Asembler();
 
     // Used to figure out address
-    static int32_t line_counter;
+    static int32_t section_counter;
+    static std::string current_section;
 
     // Used to do instructions and also directives
     static std::vector<std::unique_ptr<action>> file_actions;
     
     // Classic for symbol table
     struct symbol_struct {
-
-        symbol_struct(      int32_t,
-                            int32_t,
-                            int32_t,
-                            SYMBOL_TYPE,
-                            SYMBOL_BIND,
-                            int32_t,
-                            std::string 
-                            );
         
+        static int32_t next_symbol_idx;
+
+        // Auto get idx
+        symbol_struct(      int32_t         value,
+                            int32_t         size,
+                            SYMBOL_TYPE     symbol_type,
+                            SYMBOL_BIND     symbol_bind,
+                            int32_t         ndx,
+                            std::string     symbol_name 
+                            ); 
+
+       // Everything by yourself 
         symbol_struct(){};
 
         int32_t symbol_idx;
@@ -58,7 +62,7 @@ public:
     // And relocation table 
     struct relocation_struct {
 
-        relocation_struct(){};
+        relocation_struct();
 
         relocation_struct(  int32_t,
                             RELOCATION_TYPE,
@@ -75,27 +79,29 @@ public:
 
     };
 
-    // There is no need for one singular relocation table becaouse we can just append it to every single one
+    // There is no need for one singular relocation table becaouse we can just append it to every single one 
     
-    struct literal_pool {
-        std::vector<int32_t> data;
+    struct binary_data {
+        
+        binary_data(){}
+
+        std::vector<int32_t> raw; 
     };
+
 
     // Used to store values coresponding to sections
     struct section_struct {
 
+        static int32_t next_section_idx;
+
         section_struct(){};
 
-        section_struct( std::string                         name,
-                        int32_t                             section_idx,
-                        std::vector<relocation_struct>      relocations,
-                        literal_pool                        pool
-                        );
+        section_struct(std::string name);
 
         std::string name;
         int32_t section_idx; 
         std::vector<relocation_struct> relocations;
-        literal_pool pool;
+        Asembler::binary_data binary_data;
 
         friend std::ostream& operator<<(std::ostream& os, const section_struct& obj);
 

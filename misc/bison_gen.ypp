@@ -63,7 +63,17 @@ program:
 ;
 
 label:
-    IDENTIFIER COLON {}
+    IDENTIFIER COLON {
+        
+        // TODO: fix this here for IDENTIFIER 
+
+        auto str = std::string($1);
+        str.pop_back();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<label>(str)
+        );
+    }
 ;
 
 symbols:
@@ -343,7 +353,7 @@ word_directive:
 skip_directive:
     SKIP literal {
         auto& c = Collector::get_instance();
-
+        std::cout << "SKIP" << $2 << std::endl;
         Asembler::file_actions.push_back(
             std::make_unique<directive_skip>($2)
         );
@@ -356,7 +366,13 @@ equ_directive:
     EQU IDENTIFIER COMMA {/* OVO SE PRAVIMO DA NE POSTOJI DUZE VREME*/}
 ;
 end_directive:
-    END {;}
+    END {
+        
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_end>()
+        );
+
+    }
 ;
 
 

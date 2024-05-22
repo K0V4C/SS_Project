@@ -11,7 +11,8 @@
  *
  */
 
-int32_t Asembler::line_counter = 0;
+int32_t Asembler::section_counter = 0;
+std::string Asembler::current_section = "";
 
 std::map<std::string, Asembler::section_struct> Asembler::section_table = std::map<std::string, Asembler::section_struct>();
 
@@ -28,7 +29,17 @@ std::map<std::string, Asembler::symbol_struct> Asembler::symbol_table = std::map
  *
  */
 
-Asembler::Asembler() {}
+Asembler::Asembler() {
+    // Init first entry in symbol_table 
+    Asembler::symbol_table["NULL"] = {
+        0, 0, SYMBOL_TYPE::NOTYP, SYMBOL_BIND::LOCAL, 0, "NULL"
+    };
+
+    // Reserve first section 
+
+    Asembler::section_table["NULL"] = {"NULL"};
+
+}
 
 auto Asembler::asemble() -> void {
     
@@ -48,21 +59,20 @@ Asembler::~Asembler() {}
  *
  *
  */
-Asembler::section_struct::section_struct
-(
-    std::string name, int32_t section_idx, std::vector<relocation_struct> relocations, literal_pool pool
-) : name(name), section_idx(section_idx), relocations(relocations), pool(pool) {}
+
+int32_t Asembler::section_struct::next_section_idx = 0;
+
+Asembler::section_struct::section_struct ( std::string name) 
+    :   name(name),
+        section_idx(section_struct::next_section_idx++),
+        relocations({}),
+        binary_data({}){}
 
 std::ostream& operator<<(std::ostream& os, const Asembler::section_struct& obj) {
 
-    os  << std::left << std::setw(40) << obj.name 
-        << " | " 
-        << std::left << std::setw(20) << obj.section_idx 
-        << " | " 
-        << std::left  << std::setw(20) << "vvvvvvvvvv" 
-        << " | " 
-        << std::left  << std::setw(20) << "How_To_Print" 
-        << " | \n";
+    os  << std::left << std::setw(40) << obj.name        << " | " 
+        << std::left << std::setw(20) << obj.section_idx << " | " 
+        << std::left << std::setw(43) << "vvvvvvvvvv"    << " |\n";
     
     for(int i = 0; i < 111; i++ ) os << "_";
     
@@ -89,10 +99,9 @@ auto Asembler::print_section_table() -> void {
     
     std::cout << "\n\nSection Table:\n"; 
     {
-        std::cout << std::setw(40) << std::left    << "section name" << " | "
-                  << std::setw(20) << std::left    << "section idx " << " | "
-                  << std::setw(20) << std::left    << "Rel Under Section" << " | "
-                  << std::setw(20) << std::left    << "Pool exists"  << " | \n";
+        std::cout << std::setw(40) << std::left    << "section name"        << " | "
+                  << std::setw(20) << std::left    << "section idx "        << " | "
+                  << std::setw(43) << std::left    << "Rel Under Section"   << " |\n";
     }
     
     {
@@ -111,6 +120,9 @@ auto Asembler::print_section_table() -> void {
  *
  *
  */
+
+Asembler::relocation_struct::relocation_struct()
+    : offset(0), type(RELOCATION_TYPE::ABS32), symbol_name(""), addend(0) {}
 
 Asembler::relocation_struct::relocation_struct
 (
@@ -138,25 +150,28 @@ std::ostream& operator<<(std::ostream& os, const Asembler::relocation_struct& ob
  *
  *
  */
+
+int32_t Asembler::symbol_struct::next_symbol_idx = 0;
+
 Asembler::symbol_struct::symbol_struct
 (      
-    int32_t symbol_idx, int32_t value, int32_t size, SYMBOL_TYPE symbol_type,
+    int32_t value, int32_t size, SYMBOL_TYPE symbol_type,
     SYMBOL_BIND symbol_bind, int32_t ndx, std::string symbol_name 
-) : symbol_idx(symbol_idx), value(value), size(size), symbol_type(symbol_type),
+) : symbol_idx(symbol_struct::next_symbol_idx++),
+    value(value), size(size), symbol_type(symbol_type),
     symbol_bind(symbol_bind), ndx(ndx), symbol_name(symbol_name){};
 
 std::ostream& operator<<(std::ostream& os, const Asembler::symbol_struct& obj) {
     
     {
-        std::cout   << std::setw(5) << std::left << obj.symbol_idx   << " | "
-                    << std::setw(20)<< std::left << obj.value << " | "
-                    << std::setw(5) << std::left << obj.size  << " | "
-                    << std::setw(10) << std::left << symbol_type_2_string(obj.symbol_type)  << " | "
-                    << std::setw(10) << std::left << symbol_bind_2_string(obj.symbol_bind)  << " | "
-                    << std::setw(5) << std::left << obj.ndx   << " | "
-                    << std::setw(36)<< std::left << obj.symbol_name  << " |\n";
+        std::cout   << std::setw(5)     << std::left << obj.symbol_idx                          << " | "
+                    << std::setw(20)    << std::left << obj.value                               << " | "
+                    << std::setw(5)     << std::left << obj.size                                << " | "
+                    << std::setw(10)    << std::left << symbol_type_2_string(obj.symbol_type)   << " | "
+                    << std::setw(10)    << std::left << symbol_bind_2_string(obj.symbol_bind)   << " | "
+                    << std::setw(5)     << std::left << obj.ndx                                 << " | "
+                    << std::setw(36)    << std::left << obj.symbol_name                         << " | ";
     }
-
 
     return os;    
 }
@@ -167,13 +182,13 @@ auto Asembler::print_symbol_table() -> void {
     std::cout << "Symbol table:\n";
 
     {
-        std::cout   << std::setw(5) << std::left << "idx"   << " | "
-                    << std::setw(20)<< std::left << "value" << " | "
-                    << std::setw(5) << std::left << "size"  << " | "
-                    << std::setw(10) << std::left << "type"  << " | "
-                    << std::setw(10) << std::left << "bind"  << " | "
-                    << std::setw(5) << std::left << "ndx"   << " | "
-                    << std::setw(36)<< std::left << "name"  << " |\n";
+        std::cout   << std::setw(5)     << std::left << "idx"   << " | "
+                    << std::setw(20)    << std::left << "value" << " | "
+                    << std::setw(5)     << std::left << "size"  << " | "
+                    << std::setw(10)    << std::left << "type"  << " | "
+                    << std::setw(10)    << std::left << "bind"  << " | "
+                    << std::setw(5)     << std::left << "ndx"   << " | "
+                    << std::setw(36)    << std::left << "name"  << " |\n";
 
     }
 

@@ -3,6 +3,7 @@
 
 #include "actions.hpp"
 #include <cstdint>
+#include <variant>
 
 struct directive_global_and_extern : public action {
     
@@ -40,6 +41,64 @@ struct directive_skip : public action {
 
 private:
     int32_t skip_leap;
+};
+
+
+// TODO SECTION START 
+// ALSO EDIT BISON DONT FORGOR
+
+
+struct directive_word: public action {
+
+    directive_word(std::vector<std::variant<std::string,int32_t>>);
+
+    virtual auto execute() -> void override;
+
+    virtual ~directive_word();
+
+private:
+
+    std::vector<std::variant<std::string,int32_t>> symbols_and_literals;
+
+};
+
+struct directive_ascii: public action {
+
+    directive_ascii(std::string);
+
+    virtual auto execute() -> void override;
+
+    virtual ~directive_ascii();
+
+private:
+
+    std::string ascii_string;
+
+};
+
+struct directive_equ: public action {
+
+    directive_equ(std::vector<std::variant<std::string,int32_t>>);
+
+    virtual auto execute() -> void override;
+
+    virtual ~directive_equ();
+
+private:
+
+    std::vector<std::variant<std::string,int32_t>> symbols_and_literals;
+};
+
+
+struct directive_end: public action {
+
+    directive_end();
+
+    virtual auto execute() -> void override;
+
+    virtual ~directive_end();
+
+private:
 };
 
 #endif // _DIRECTIVE_ACTIONS_HPP
