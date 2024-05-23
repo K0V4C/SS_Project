@@ -10,7 +10,7 @@ struct action {
 
     virtual auto execute() -> void = 0;
     
-    ~action();
+    virtual ~action();
 };
 
 #endif

@@ -87,24 +87,21 @@ symbols:
         sym_or_lit new_element = std::string($3);
         c.add_symbol_or_literal(new_element);
     }
+|   literal  {
+        auto& c = Collector::get_instance();
+        sym_or_lit new_element = $1;
+        c.add_symbol_or_literal(new_element);
+    }
+|   symbols COMMA literal {
+        auto& c = Collector::get_instance();
+        sym_or_lit new_element = $3;
+        c.add_symbol_or_literal(new_element); 
+    }
 ;
 
 literal:
     DECIMAL_NUM { $$ = $1;}
 |   HEX_NUM     { $$ = $1;}
-;
-
-literal_list:
-    literal {
-        auto& c = Collector::get_instance();
-        sym_or_lit new_element = $1;
-        c.add_symbol_or_literal(new_element);
-    }
-|   literal_list COMMA literal {
-        auto& c = Collector::get_instance();
-        sym_or_lit new_element = $3;
-        c.add_symbol_or_literal(new_element); 
-    }
 ;
 
 operand:
@@ -173,7 +170,11 @@ instruction:
 ;
 
 halt_instruction:
-    HALT {/*DONE*/}
+    HALT { 
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_halt>()
+        ); 
+    }
 ;
 
 int_instruction:
@@ -226,47 +227,146 @@ pop_instruction:
 ;
 
 xchg_instrucion:
-    XCHG gpr COMMA gpr {/*DONE*/}
+    XCHG gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_xchg>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 add_instruction:
-    ADD gpr COMMA gpr {/*DONE*/}
+    ADD gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_add>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 sub_instrucion:
-    SUB gpr COMMA gpr {/*DONE*/}
+    SUB gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_sub>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 mul_instruction:
-    MUL gpr COMMA gpr {/*DONE*/}
+    MUL gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_mul>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 div_instruction:
-    DIV gpr COMMA gpr {/*DONE*/}
+    DIV gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_div>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 not_instruction:
-    NOT gpr {/*DONE*/}
+    NOT gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_not>(gpr_regs[0])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 and_instruction:
-    AND gpr COMMA gpr {/*DONE*/}
+    AND gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_and>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 or_instruction:
-    OR gpr COMMA gpr {/*DONE*/}
+    OR gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_or>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 xor_instruction:
-    XOR gpr COMMA gpr {/*DONE*/}
+    XOR gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_xor>(gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 shl_instruction:
-    SHL gpr COMMA gpr {/*DONE*/}
+    SHL gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_shl>(gpr_regs[0], gpr_regs[1]) 
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 shr_instruction:
-   SHR gpr COMMA gpr {/*DONE*/}
+   SHR gpr COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_shr>(gpr_regs[0], gpr_regs[1]) 
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 ld_instrucion:
@@ -347,13 +447,21 @@ section_directive:
     }
 ;
 word_directive:
-    WORD symbols {/* DONE */}
-|   WORD literal_list {/* DONE */}
+    WORD symbols {
+        auto& c = Collector::get_instance();
+
+        auto arr = c.get_symbols_and_literals();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_word>(arr)
+        );
+
+        c.clear_symbols_and_literals();
+    }
 ;
 skip_directive:
     SKIP literal {
         auto& c = Collector::get_instance();
-        std::cout << "SKIP" << $2 << std::endl;
         Asembler::file_actions.push_back(
             std::make_unique<directive_skip>($2)
         );

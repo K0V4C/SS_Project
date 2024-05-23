@@ -19,10 +19,6 @@ public:
 
     ~Asembler();
 
-    // Used to figure out address
-    static int32_t section_counter;
-    static std::string current_section;
-
     // Used to do instructions and also directives
     static std::vector<std::unique_ptr<action>> file_actions;
     
@@ -32,7 +28,7 @@ public:
         static int32_t next_symbol_idx;
 
         // Auto get idx
-        symbol_struct(      int32_t         value,
+        symbol_struct(      uint32_t         value,
                             int32_t         size,
                             SYMBOL_TYPE     symbol_type,
                             SYMBOL_BIND     symbol_bind,
@@ -43,9 +39,9 @@ public:
        // Everything by yourself 
         symbol_struct(){};
 
-        int32_t symbol_idx;
-        int32_t value;
-        int32_t size;
+        int32_t  symbol_idx;
+        uint32_t value;
+        int32_t  size;
         SYMBOL_TYPE symbol_type;
         SYMBOL_BIND symbol_bind;
         int32_t ndx;
@@ -84,8 +80,12 @@ public:
     struct binary_data {
         
         binary_data(){}
+        
+        auto add_instruction(uint32_t) -> void;
 
-        std::vector<int32_t> raw; 
+        auto add_byte(uint8_t) -> void;
+
+        std::vector<uint8_t> raw; 
     };
 
 
@@ -106,6 +106,12 @@ public:
         friend std::ostream& operator<<(std::ostream& os, const section_struct& obj);
 
     };
+
+    // Used to help find values
+    static auto get_section_counter() -> uint32_t;
+    static auto get_current_section() -> section_struct&;
+    // Used to figure out current_section
+    static std::string current_section;
 
     static std::map<std::string, Asembler::section_struct> section_table;
 

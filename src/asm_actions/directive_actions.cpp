@@ -9,6 +9,7 @@
 #include "../../inc/asembler.hpp"
 #include <cstdint>
 #include <stdexcept>
+#include <variant>
 
 //
 //
@@ -21,20 +22,18 @@ directive_global_and_extern::directive_global_and_extern(std::vector<std::string
     : symbol_list(symbol_list) {}
 
 auto directive_global_and_extern::execute() -> void {   
-
     for(auto& symbol : this->symbol_list) {
-
         auto it = Asembler::symbol_table.find(symbol);
 
         // If it exists just set its bind to symbol_bind 
         if(it != Asembler::symbol_table.end()) { 
-
+            
             Asembler::symbol_table[symbol].symbol_bind = SYMBOL_BIND::EXTERN;
 
         } else {
             
             Asembler::symbol_table[symbol] = {
-                Asembler::section_counter,
+                Asembler::get_section_counter(),
                 0,
                 SYMBOL_TYPE::NOTYP,
                 SYMBOL_BIND::EXTERN,
@@ -43,6 +42,8 @@ auto directive_global_and_extern::execute() -> void {
             };
         }
     }
+
+
 
 
 } 
@@ -71,7 +72,6 @@ auto directive_section::execute() -> void {
     };
 
     Asembler::current_section = section_name;
-    Asembler::section_counter = 0; // Starting new section
 }
 
 directive_section::~directive_section() {}
@@ -88,7 +88,9 @@ directive_skip::directive_skip(int32_t skip_leap)
 auto directive_skip::execute() -> void {
 
     // TODO: What is ship is 0?
-    Asembler::section_counter += this->skip_leap; // Add offset reserved
+    for(int i = 0; i < this->skip_leap; i++) {
+        Asembler::section_table[Asembler::current_section].binary_data.add_byte(0);
+    }
 }
 
 directive_skip::~directive_skip(){}
@@ -103,7 +105,23 @@ directive_word::directive_word(std::vector<std::variant<std::string, int32_t>> s
     : symbols_and_literals(symbol_list){}
 
 auto directive_word::execute() -> void {
-    // TODO:
+
+    auto& section = Asembler::section_table[Asembler::current_section];
+    
+    for(auto& element : symbols_and_literals) { 
+        if(std::holds_alternative<std::string>(element)) {
+            // TODO: leave relocation data in for this place
+            // TODO: check if it already maybe defined
+            section.binary_data.add_instruction(0);
+        } else {
+            // TODO: should I consider leaving relocation data in here?
+            section.binary_data.add_instruction(
+                static_cast<uint32_t>(
+                    std::get<int32_t>(element)
+                )
+            );
+        }
+    }
 }
 
 directive_word::~directive_word(){}

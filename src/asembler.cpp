@@ -10,8 +10,6 @@
  *      STATIC INITIALISATION
  *
  */
-
-int32_t Asembler::section_counter = 0;
 std::string Asembler::current_section = "";
 
 std::map<std::string, Asembler::section_struct> Asembler::section_table = std::map<std::string, Asembler::section_struct>();
@@ -36,7 +34,7 @@ Asembler::Asembler() {
     };
 
     // Reserve first section 
-
+    
     Asembler::section_table["NULL"] = {"NULL"};
 
 }
@@ -48,6 +46,33 @@ auto Asembler::asemble() -> void {
     for(auto& action : all_actions ) {
         action->execute();
     }
+}
+
+/*
+ *
+ *
+ *      BINRAY DATA
+ *
+ *
+ *
+ */
+
+auto Asembler::binary_data::add_byte(uint8_t byte) -> void{
+    raw.push_back(byte);
+}
+
+// TODO: fix this
+auto Asembler::binary_data::add_instruction(uint32_t instr) -> void {
+    raw.push_back(instr & 0xff);
+    raw.push_back(
+            (instr & 0xff00) >> 8 
+    );
+    raw.push_back (
+            (instr & 0xff0000) >> 16
+    );
+    raw.push_back (
+            (instr & 0xff000000) >> 24
+    );
 }
 
 Asembler::~Asembler() {}
@@ -67,6 +92,16 @@ Asembler::section_struct::section_struct ( std::string name)
         section_idx(section_struct::next_section_idx++),
         relocations({}),
         binary_data({}){}
+
+auto Asembler::get_section_counter() -> uint32_t {
+    if (Asembler::current_section == "") return 0;
+
+    return Asembler::section_table[Asembler::current_section].binary_data.raw.size();
+}
+
+auto Asembler::get_current_section() -> section_struct& {
+    return Asembler::section_table[Asembler::current_section];
+}
 
 std::ostream& operator<<(std::ostream& os, const Asembler::section_struct& obj) {
 
@@ -155,7 +190,7 @@ int32_t Asembler::symbol_struct::next_symbol_idx = 0;
 
 Asembler::symbol_struct::symbol_struct
 (      
-    int32_t value, int32_t size, SYMBOL_TYPE symbol_type,
+    uint32_t value, int32_t size, SYMBOL_TYPE symbol_type,
     SYMBOL_BIND symbol_bind, int32_t ndx, std::string symbol_name 
 ) : symbol_idx(symbol_struct::next_symbol_idx++),
     value(value), size(size), symbol_type(symbol_type),

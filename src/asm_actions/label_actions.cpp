@@ -17,7 +17,7 @@ auto label::execute() -> void {
 
     auto it = Asembler::symbol_table.find(symbol_name);
     
-    auto current_section_idx = Asembler::section_table[Asembler::current_section].section_idx;
+    auto& section = Asembler::get_current_section();
 
     // Check if already in table
     if(it != Asembler::symbol_table.end()) {
@@ -34,18 +34,18 @@ auto label::execute() -> void {
         auto& symbol = Asembler::symbol_table[symbol_name];
 
         // TODO: echck if this is correct
-        symbol.value = Asembler::section_counter;
-        symbol.ndx   = current_section_idx;
+        symbol.value = Asembler::get_section_counter();
+        symbol.ndx   = section.section_idx;
         return;
     }
     
     // Create new symbol
     Asembler::symbol_table[symbol_name] = {
-        Asembler::section_counter,
+        Asembler::get_section_counter(),
         0,
         SYMBOL_TYPE::NOTYP,
         SYMBOL_BIND::LOCAL,
-        current_section_idx,
+        section.section_idx,
         symbol_name
     };
 
