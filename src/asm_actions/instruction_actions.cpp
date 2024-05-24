@@ -7,6 +7,8 @@
 #include "../../inc/asm_actions/instruction_actions.hpp"
 #include "../../inc/asembler.hpp"
 
+#include <cmath>
+
 auto combine
 ( 
     uint8_t op_code,
@@ -37,6 +39,28 @@ auto combine
 
 }
 
+auto add_leap() -> void {
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction (
+        combine(
+            branch::op_code,
+            instruction_jmp::mode_displ,
+            static_cast<uint8_t>(REGISTERS::PC),
+            0,
+            0,
+            4
+        )
+    );
+}
+
+auto reserve_4B(uint32_t instr) -> void {
+
+    auto& section = Asembler::get_current_section();
+    section.binary_data.add_instruction(instr);
+    
+}
+
 // 
 //
 //      INSTRUCTION HALT
@@ -62,6 +86,178 @@ auto instruction_halt::execute() -> void {
 }
 
 instruction_halt::~instruction_halt() {}
+
+// 
+//
+//      BRANCH
+//
+//
+
+
+branch::branch(std::variant<std::string, int32_t> value, uint8_t gpr_b, uint8_t gpr_c)
+    : value(value), gpr_b(gpr_b), gpr_c(gpr_c){}
+
+auto branch::execute_branch(uint8_t branch_displ, uint8_t branch_not_displ) -> void {
+
+    auto& section = Asembler::get_current_section();
+
+    // If passed operand is a literal
+
+    if(std::holds_alternative<int32_t>(value)) {
+
+        auto literal = std::get<int32_t>(value);
+
+        // This is if literal can be placed inside displacement
+        if(literal > std::pow(-2, 11) and literal < std::pow(2, 11)) {
+            section.binary_data.add_instruction (
+                combine(
+                    branch::op_code,
+                    branch_displ, 
+                    static_cast<uint8_t>(REGISTERS::PC),
+                    gpr_b,
+                    gpr_c,
+                    literal < 0 ? literal | 0x8000 : literal
+                )
+            );
+            return;
+        }
+
+        // If it cannot be placed inside displacement
+
+        section.binary_data.add_instruction (
+            combine(
+                branch::op_code,
+                branch_not_displ, 
+                static_cast<uint8_t>(REGISTERS::PC),
+                gpr_b,
+                gpr_c,
+                4
+            )
+        );
+
+        add_leap();
+        reserve_4B(literal);
+        return;
+    }
+
+
+    // Now the symbol part
+
+    auto _symbol = std::get<std::string>(value);
+    auto it = Asembler::symbol_table.find(_symbol);
+
+    // There is only one case when we can leave displacement for symbol
+    // That is is if is defined, in the same section and < 2^12
+
+    if  ( 
+            it != Asembler::symbol_table.end() and 
+            Asembler::symbol_table[_symbol].ndx == Asembler::get_current_section().section_idx and 
+            (Asembler::get_section_counter() - Asembler::symbol_table[_symbol].value) < std::pow(2,12)
+        ) {    
+
+        // SYMBOL EXISTS AND IS DEFINED
+
+        section.binary_data.add_instruction (
+            combine(
+                branch::op_code,
+                branch_displ, 
+                static_cast<uint8_t>(REGISTERS::PC),
+                gpr_b,
+                gpr_c,
+                (Asembler::symbol_table[_symbol].value - Asembler::get_section_counter()) | 0x8000 // should always be negative?
+            )
+        );
+
+        return;
+    }
+
+
+    // Symbol not defined, we have to leave reloaciton data
+
+    section.binary_data.add_instruction (
+        combine(
+            branch::op_code,
+            branch_not_displ, 
+            static_cast<uint8_t>(REGISTERS::PC),
+            gpr_b,
+            gpr_c,
+            4
+        )
+    );
+
+    add_leap();
+    section.add_realocation(
+        Asembler::get_section_counter(),
+        RELOCATION_TYPE::ABS32,
+        _symbol,
+        0
+    );
+    reserve_4B(0);
+    return;
+ 
+}
+
+branch::~branch() {}
+
+// 
+//
+//      INSTRUCTION JMP
+//
+//
+
+instruction_jmp::instruction_jmp(std::variant<std::string, int32_t> value)
+    : branch(value,0,0) {}
+
+auto instruction_jmp::execute() -> void {
+    execute_branch(instruction_jmp::mode_displ, instruction_jmp::mode_not_displ);
+}
+
+instruction_jmp::~instruction_jmp() {}
+
+// 
+//
+//      INSTRUCTION BEQ
+//
+//
+
+instruction_beq::instruction_beq(std::variant<std::string, int32_t> value, uint8_t gpr_b, uint8_t gpr_c)
+    : branch(value,gpr_b,gpr_c){}
+
+auto instruction_beq::execute() -> void {
+    execute_branch(instruction_beq::mode_displ, instruction_beq::mode_not_displ);
+}
+
+instruction_beq::~instruction_beq() {}
+
+// 
+//
+//      INSTRUCTION BNE
+//
+//
+
+instruction_bne::instruction_bne(std::variant<std::string, int32_t> value, uint8_t gpr_b, uint8_t gpr_c)
+    : branch(value,gpr_b,gpr_c){}
+
+auto instruction_bne::execute() -> void {
+    execute_branch(instruction_bne::mode_displ, instruction_bne::mode_not_displ);
+}
+
+instruction_bne::~instruction_bne() {}
+
+// 
+//
+//      INSTRUCTION BGT
+//
+//
+
+instruction_bgt::instruction_bgt(std::variant<std::string, int32_t> value, uint8_t gpr_b, uint8_t gpr_c)
+    : branch(value,gpr_b,gpr_c){}
+
+auto instruction_bgt::execute() -> void {
+    execute_branch(instruction_bgt::mode_displ, instruction_bgt::mode_not_displ);
+}
+
+instruction_bgt::~instruction_bgt() {}
 
 //
 //

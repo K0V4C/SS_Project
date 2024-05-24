@@ -93,6 +93,15 @@ Asembler::section_struct::section_struct ( std::string name)
         relocations({}),
         binary_data({}){}
 
+auto Asembler::section_struct::add_realocation(
+        uint32_t offset,
+        RELOCATION_TYPE type,
+        std::string symbol,
+        int32_t addened) -> void {
+    
+    Asembler::get_current_section().relocations.push_back({offset, type, symbol, addened});
+}
+
 auto Asembler::get_section_counter() -> uint32_t {
     if (Asembler::current_section == "") return 0;
 
@@ -161,7 +170,7 @@ Asembler::relocation_struct::relocation_struct()
 
 Asembler::relocation_struct::relocation_struct
 (
-    int32_t offset, RELOCATION_TYPE type, std::string symbol_name, int32_t addend
+    uint32_t offset, RELOCATION_TYPE type, std::string symbol_name, int32_t addend
 ) : offset(offset), type(type), symbol_name(symbol_name), addend(addend){};
 
 

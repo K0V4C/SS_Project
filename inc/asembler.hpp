@@ -60,13 +60,13 @@ public:
 
         relocation_struct();
 
-        relocation_struct(  int32_t,
+        relocation_struct(  uint32_t,
                             RELOCATION_TYPE,
                             std::string,
                             int32_t
                             );
 
-        int32_t offset;
+        uint32_t offset;
         RELOCATION_TYPE type;
         std::string symbol_name; // maybe use it to find idx?
         int32_t addend;
@@ -97,6 +97,8 @@ public:
         section_struct(){};
 
         section_struct(std::string name);
+
+        auto add_realocation(uint32_t, RELOCATION_TYPE, std::string, int32_t)->void;
 
         std::string name;
         int32_t section_idx; 

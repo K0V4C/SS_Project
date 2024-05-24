@@ -21,4 +21,10 @@ enum class RELOCATION_TYPE {
 };
 
 const char* relocation_type_2_string(RELOCATION_TYPE s);
+
+enum class REGISTERS {
+    PC = 15,
+    SP = 14
+};
+
 #endif // _TYPES_HPP 

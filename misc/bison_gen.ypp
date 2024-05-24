@@ -203,19 +203,66 @@ ret_instruction:
 ;
 
 jmp_instruction:
-    JMP branch_operand {/*DONE*/}
+    JMP branch_operand {
+        auto& c = Collector::get_instance();
+        auto new_symbol = c.get_symbols_and_literals()[0];
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_jmp>(new_symbol)
+        ); 
+
+    }
 ;
 
 beq_instruction:
-    BEQ gpr COMMA gpr COMMA branch_operand {/* SHOULD BE DONE */}
+    BEQ gpr COMMA gpr COMMA branch_operand {
+
+        auto& c = Collector::get_instance();
+        auto new_symbol = c.get_symbols_and_literals()[0];
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_beq>(new_symbol, gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+        c.clear_symbols_and_literals();
+
+    }
 ;
 
 bne_instruction:
-    BNE gpr COMMA gpr COMMA branch_operand {/* SHOULD BE DONE */}
+    BNE gpr COMMA gpr COMMA branch_operand {
+
+        auto& c = Collector::get_instance();
+        auto new_symbol = c.get_symbols_and_literals()[0];
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_bne>(new_symbol, gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+        c.clear_symbols_and_literals();
+
+    }
 ;
 
 bgt_instruction:
-    BGT gpr COMMA gpr branch_operand {/* SHOULD BE DONE */}
+    BGT gpr COMMA gpr branch_operand {
+
+        auto& c = Collector::get_instance();
+        auto new_symbol = c.get_symbols_and_literals()[0];
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_bgt>(new_symbol, gpr_regs[0], gpr_regs[1])
+        ); 
+
+        c.clear_gpr_list();
+        c.clear_symbols_and_literals();
+
+    }
 ;
 
 push_instruction:

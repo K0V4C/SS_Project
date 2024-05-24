@@ -112,6 +112,12 @@ auto directive_word::execute() -> void {
         if(std::holds_alternative<std::string>(element)) {
             // TODO: leave relocation data in for this place
             // TODO: check if it already maybe defined
+            section.add_realocation(
+                    Asembler::get_section_counter(),
+                    RELOCATION_TYPE::ABS32,
+                    std::get<std::string>(element),
+                    0
+            ); 
             section.binary_data.add_instruction(0);
         } else {
             // TODO: should I consider leaving relocation data in here?

@@ -3,6 +3,7 @@
 
 #include "actions.hpp"
 #include <cstdint>
+#include <variant>
 #include <sys/types.h>
 
 // Used as template for further
@@ -15,6 +16,10 @@ auto combine(
     uint8_t C,
     int32_t dipls
 ) -> uint32_t;
+
+auto add_leap() -> void;
+
+auto reserve_4B(uint32_t) -> void;
 
 //
 //
@@ -31,9 +36,111 @@ struct instruction_halt : public action {
 
     virtual ~instruction_halt();
 
-    static constexpr uint8_t op_code = 0b000;
-    static constexpr uint8_t mode    = 0b000;
+    static constexpr uint8_t op_code = 0b0000;
+    static constexpr uint8_t mode    = 0b0000;
 
+};
+
+
+//
+//
+//      BRANCH INSTRUCTIONS
+//
+//
+
+struct branch : public action {
+
+    branch(std::variant<std::string, int32_t>, uint8_t, uint8_t);
+
+    auto execute_branch(uint8_t branch_displ, uint8_t branch_not_displ) -> void;
+
+    ~branch();
+
+    static constexpr uint8_t op_code        = 0b0011;
+
+protected:
+    std::variant<std::string, int32_t> value;
+    uint8_t gpr_b;
+    uint8_t gpr_c;
+
+};
+
+// TODO:
+//
+//
+//      INSTRUCTION JMP
+//
+//
+//
+
+struct instruction_jmp : public branch {
+    
+    instruction_jmp(std::variant<std::string, int32_t>);
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_jmp();
+
+    static constexpr uint8_t mode_displ     = 0b0000;
+    static constexpr uint8_t mode_not_displ = 0b1000;
+};
+
+//
+//
+//      INSTRUCTION BEQ
+//
+//
+//
+
+struct instruction_beq : public branch {
+    
+    instruction_beq(std::variant<std::string, int32_t> value, uint8_t gpr_b, uint8_t gpr_c);
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_beq();
+
+    static constexpr uint8_t mode_displ     = 0b0001;
+    static constexpr uint8_t mode_not_displ = 0b1001;
+};
+
+//
+//
+//      INSTRUCTION BNE
+//
+//
+//
+
+struct instruction_bne : public branch {
+    
+    instruction_bne(std::variant<std::string, int32_t> value, uint8_t gpr_b, uint8_t gpr_c);
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_bne();
+
+    static constexpr uint8_t mode_displ     = 0b0010;
+    static constexpr uint8_t mode_not_displ = 0b1010;
+
+};
+
+//
+//
+//      INSTRUCTION BGT
+//
+//
+//
+
+struct instruction_bgt : public branch {
+    
+    instruction_bgt(std::variant<std::string, int32_t> value, uint8_t gpr_b, uint8_t gpr_c);
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_bgt();
+
+    static constexpr uint8_t mode_displ     = 0b0001;
+    static constexpr uint8_t mode_not_displ = 0b0011;
 };
 
 //
