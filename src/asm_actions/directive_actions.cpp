@@ -18,10 +18,40 @@
 //
 
 // This should init struct needed for extern
-directive_global_and_extern::directive_global_and_extern(std::vector<std::string> symbol_list)
+directive_global::directive_global(std::vector<std::string> symbol_list)
     : symbol_list(symbol_list) {}
 
-auto directive_global_and_extern::execute() -> void {   
+auto directive_global::execute() -> void {   
+    for(auto& symbol : this->symbol_list) {
+        auto it = Asembler::symbol_table.find(symbol);
+
+        // If it exists just set its bind to symbol_bind 
+        if(it != Asembler::symbol_table.end()) { 
+            
+            Asembler::symbol_table[symbol].symbol_bind = SYMBOL_BIND::EXTERN;
+
+        } else {
+            
+            Asembler::symbol_table[symbol] = {
+                Asembler::get_section_counter(),
+                0,
+                SYMBOL_TYPE::NOTYP,
+                SYMBOL_BIND::GLOBAL,
+                0,
+                symbol
+            };
+        }
+    }
+
+} 
+
+directive_global::~directive_global(){}
+
+// This should init struct needed for extern
+directive_extern::directive_extern(std::vector<std::string> symbol_list)
+    : symbol_list(symbol_list) {}
+
+auto directive_extern::execute() -> void {   
     for(auto& symbol : this->symbol_list) {
         auto it = Asembler::symbol_table.find(symbol);
 
@@ -43,12 +73,9 @@ auto directive_global_and_extern::execute() -> void {
         }
     }
 
-
-
-
 } 
 
-directive_global_and_extern::~directive_global_and_extern(){}
+directive_extern::~directive_extern(){}
 
 // 
 //
@@ -72,6 +99,25 @@ auto directive_section::execute() -> void {
     };
 
     Asembler::current_section = section_name;
+
+    // Also add it as a symbol
+
+    auto it_s = Asembler::symbol_table.find(this->section_name);
+
+        if(it_s != Asembler::symbol_table.end()) {
+        throw std::runtime_error("Invalid section name: Symbol already defined!");
+    }
+
+     Asembler::symbol_table[section_name] = {
+        0,
+        0,
+        SYMBOL_TYPE::SCTN,
+        SYMBOL_BIND::LOCAL,
+        Asembler::section_table[section_name].section_idx,
+        section_name
+    };
+
+
 }
 
 directive_section::~directive_section() {}
@@ -112,7 +158,7 @@ auto directive_word::execute() -> void {
         if(std::holds_alternative<std::string>(element)) {
             // TODO: leave relocation data in for this place
             // TODO: check if it already maybe defined
-            section.add_realocation(
+            section.add_relocation(
                     Asembler::get_section_counter(),
                     RELOCATION_TYPE::ABS32,
                     std::get<std::string>(element),

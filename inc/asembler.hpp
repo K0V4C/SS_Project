@@ -89,6 +89,29 @@ public:
     };
 
 
+    //
+    //
+    //  FORWARD TABLE
+    //
+    // 
+
+    struct forward_struct {
+
+        forward_struct();
+        ~forward_struct();
+
+        std::string symbol_name;
+        std::vector<uint32_t> locations;
+
+        friend std::ostream& operator<<(std::ostream& os, const forward_struct& obj);
+    };
+
+    static auto link_symbol(std::string, uint32_t location) -> void;
+
+    static std::map<std::string, forward_struct> forward_table;
+
+    static auto print_forward_table() -> void;
+
     // Used to store values coresponding to sections
     struct section_struct {
 
@@ -98,7 +121,7 @@ public:
 
         section_struct(std::string name);
 
-        auto add_realocation(uint32_t, RELOCATION_TYPE, std::string, int32_t)->void;
+        auto add_relocation(uint32_t, RELOCATION_TYPE, std::string, int32_t)->void;
 
         std::string name;
         int32_t section_idx; 

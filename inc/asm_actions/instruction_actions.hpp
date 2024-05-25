@@ -1,6 +1,8 @@
 #ifndef _INSTRUCTION_ACTIONS_HPP
 #define _INSTRUCTION_ACTIONS_HPP
 
+#include "../types.hpp"
+
 #include "actions.hpp"
 #include <cstdint>
 #include <variant>
@@ -39,6 +41,88 @@ struct instruction_halt : public action {
     static constexpr uint8_t op_code = 0b0000;
     static constexpr uint8_t mode    = 0b0000;
 
+};
+
+//
+//
+//      INSTRUCTION INT
+//
+//
+//
+
+struct instruction_int : public action {
+    
+    instruction_int();
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_int();
+
+    static constexpr uint8_t op_code = 0b0001;
+    static constexpr uint8_t mode    = 0b0000;
+
+};
+
+//
+//
+//      INSTRUCTION IRET
+//
+//
+//
+
+struct instruction_iret : public action {
+    
+    instruction_iret();
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_iret();
+
+    static constexpr uint8_t op_code     = 0b1001;
+    static constexpr uint8_t pop_status  = 0b0111;
+    static constexpr uint8_t pop_pc      = 0b0011;
+};
+
+//
+//
+//      INSTRUCTION CALL
+//
+//
+//
+
+// TODO: check if this is correct
+struct instruction_call : public action {
+    
+    instruction_call(std::variant<std::string, int32_t> operand);
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_call();
+
+    static constexpr uint8_t op_code        = 0b0010;
+    static constexpr uint8_t mode_displ     = 0b0000;
+    static constexpr uint8_t mode_not_displ = 0b0001;
+private:
+    std::variant<std::string, int32_t> operand;
+};
+
+//
+//
+//      INSTRUCTION RET
+//
+//
+//
+
+struct instruction_ret : public action {
+    
+    instruction_ret();
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_ret();
+
+    static constexpr uint8_t op_code     = 0b1001;
+    static constexpr uint8_t mode        = 0b0011;
 };
 
 
@@ -141,6 +225,48 @@ struct instruction_bgt : public branch {
 
     static constexpr uint8_t mode_displ     = 0b0001;
     static constexpr uint8_t mode_not_displ = 0b0011;
+};
+
+//
+//
+//      INSTRUCTION PUSH
+//
+//
+//
+
+struct instruction_push : public action {
+    
+    instruction_push(uint8_t reg);
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_push();
+
+    static constexpr uint8_t op_code     = 0b1000;
+    static constexpr uint8_t mode        = 0b0001;
+private:
+    uint8_t reg;
+};
+
+//
+//
+//      INSTRUCTION POP
+//
+//
+//
+
+struct instruction_pop : public action {
+    
+    instruction_pop(uint8_t reg);
+
+    virtual auto execute() -> void override;
+
+    virtual ~instruction_pop();
+
+    static constexpr uint8_t op_code     = 0b1001;
+    static constexpr uint8_t mode        = 0b0011;
+private:
+    uint8_t reg;
 };
 
 //
@@ -384,14 +510,19 @@ private:
 
 struct instruction_csrrd : public action {
     
-    instruction_csrrd(uint8_t gpr_d);
+    instruction_csrrd(uint8_t gpr_d, REGISTERS csr);
 
     virtual auto execute() -> void override;
  
     virtual ~instruction_csrrd();
 
+    static uint8_t constexpr op_code = 0b1001;
+    static uint8_t constexpr mode    = 0b0000;  
+
+
 private:
     uint8_t gpr_d;   
+    REGISTERS csr;
 };
 
 //
@@ -402,14 +533,20 @@ private:
 
 struct instruction_csrwr : public action {
     
-    instruction_csrwr(uint8_t gpr_d);
+    instruction_csrwr(uint8_t gpr_s, REGISTERS csr);
 
     virtual auto execute() -> void override;
  
     virtual ~instruction_csrwr();
 
+    static uint8_t constexpr op_code = 0b1001;
+    static uint8_t constexpr mode    = 0b0100;  
+
 private:
-    uint8_t gpr_d;   
+    uint8_t gpr_s;   
+    REGISTERS csr;
 };
+
+
 
 #endif // _INSTRUCTION_ACTIONS_HPP

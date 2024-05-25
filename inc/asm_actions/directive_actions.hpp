@@ -5,13 +5,27 @@
 #include <cstdint>
 #include <variant>
 
-struct directive_global_and_extern : public action {
+struct directive_global : public action {
     
-    directive_global_and_extern(std::vector<std::string> symbol_list);
+    directive_global(std::vector<std::string> symbol_list);
 
     virtual auto execute() -> void override;
     
-    virtual ~directive_global_and_extern();
+    virtual ~directive_global();
+
+private:
+    
+    std::vector<std::string> symbol_list;
+
+};
+
+struct directive_extern : public action {
+    
+    directive_extern(std::vector<std::string> symbol_list);
+
+    virtual auto execute() -> void override;
+    
+    virtual ~directive_extern();
 
 private:
     

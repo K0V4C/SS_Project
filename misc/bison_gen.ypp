@@ -119,12 +119,12 @@ branch_operand:
     IDENTIFIER {
         sym_or_lit op;
         op = std::string($1);
-        Collector::get_instance().set_branch_operand(op);
+        Collector::get_instance().add_symbol_or_literal(op);
     }
 |   literal    {
         sym_or_lit op;
         op = $1;
-        Collector::get_instance().set_branch_operand(op);
+        Collector::get_instance().add_symbol_or_literal(op);
     }
 ;
 
@@ -132,12 +132,6 @@ gpr:
     REGISTER {Collector::get_instance().append_gpr($1) ;}
 |   SP_REG   {Collector::get_instance().append_gpr(14) ;}
 |   PC_REG   {Collector::get_instance().append_gpr(15) ;}
-;
-
-csr:
-    STATUS_REG  {/*TODO*/}
-|   HANDLER_REG {/*TODO*/}
-|   CAUSE_REG   {/*TODO*/}
 ;
 
 instruction:
@@ -178,28 +172,40 @@ halt_instruction:
 ;
 
 int_instruction:
-    INT {/*DONE*/}
+    INT {
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_int>()
+        );
+    }
 ;
 
 iret_instruction:
-    IRET {/*DONE*/}
+    IRET {
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_iret>()
+        );
+    }
 ;
 
 call_instruction:
     CALL branch_operand {
-        auto& var = Collector::get_instance().get_branch_operand();
-        if ( std::holds_alternative<std::string>(var) ) {
-            std::cout << "CALL SIMBOLCINA" << std::endl;
-        }
+        auto& c = Collector::get_instance();
+        auto new_element = c.get_symbols_and_literals()[0];
 
-        if ( std::holds_alternative<int32_t>(var) ) {
-            std::cout << "CALL LITERALCINA" << std::endl;
-        }
+        /*Asembler::file_actions.push_back(
+            std::make_unique<instruction_call>(new_element)
+        );*/
+
+        c.clear_symbols_and_literals();
     }
 ;
 
 ret_instruction:
-    RET {/*DONE*/}
+    RET {
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_ret>()
+        );
+    }
 ;
 
 jmp_instruction:
@@ -211,6 +217,7 @@ jmp_instruction:
             std::make_unique<instruction_jmp>(new_symbol)
         ); 
 
+        c.clear_symbols_and_literals();
     }
 ;
 
@@ -266,11 +273,29 @@ bgt_instruction:
 ;
 
 push_instruction:
-    PUSH gpr {/*DONE*/}
+    PUSH gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_push>(gpr_regs[0])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 pop_instruction:
-    POP gpr {/*DONE*/}
+    POP gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_pop>(gpr_regs[0])
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 xchg_instrucion:
@@ -425,11 +450,72 @@ st_instruction:
 ;
 
 csrrd_instruction:
-    CSRRD csr COMMA gpr {/* NOT DONE YET */}
+    CSRRD STATUS_REG COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_csrrd>(gpr_regs[0], REGISTERS::STATUS) 
+        ); 
+
+        c.clear_gpr_list();
+    }
+|   CSRRD HANDLER_REG COMMA gpr {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_csrrd>(gpr_regs[0], REGISTERS::HANDLER) 
+        ); 
+
+        c.clear_gpr_list();
+    }
+|   CSRRD CAUSE_REG COMMA gpr {
+
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_csrrd>(gpr_regs[0], REGISTERS::CAUSE) 
+        ); 
+
+        c.clear_gpr_list();
+
+    }
 ;
 
 csrwr_instruction:
-    CSRWR gpr COMMA csr {/* NOT DONE YET */}
+    CSRWR gpr COMMA STATUS_REG {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_csrwr>(gpr_regs[0], REGISTERS::STATUS) 
+        ); 
+
+        c.clear_gpr_list();
+    }
+|   CSRWR gpr COMMA HANDLER_REG {
+
+            auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_csrwr>(gpr_regs[0], REGISTERS::HANDLER) 
+        ); 
+
+        c.clear_gpr_list();
+    }
+|   CSRWR gpr COMMA CAUSE_REG {
+        auto& c = Collector::get_instance();
+        auto gpr_regs = c.get_gpr_list();
+
+        Asembler::file_actions.push_back(
+            std::make_unique<instruction_csrwr>(gpr_regs[0], REGISTERS::CAUSE) 
+        ); 
+
+        c.clear_gpr_list();
+    }
 ;
 
 directive:
@@ -457,7 +543,7 @@ global_directive:
         }
 
         Asembler::file_actions.push_back(
-            std::make_unique<directive_global_and_extern>(to_send)
+            std::make_unique<directive_global>(to_send)
         );
 
         c.clear_symbols_and_literals();
@@ -477,7 +563,7 @@ extern_directive:
         }
 
         Asembler::file_actions.push_back(
-            std::make_unique<directive_global_and_extern>(to_send)
+            std::make_unique<directive_extern>(to_send)
         );
 
         c.clear_symbols_and_literals();
@@ -518,7 +604,12 @@ ascii_directive:
     ASCII STRING {/* NOT DONE */}
 ;
 equ_directive:
-    EQU IDENTIFIER COMMA {/* OVO SE PRAVIMO DA NE POSTOJI DUZE VREME*/}
+    EQU symbols {
+        /* NOT DONE AND MAYBE WILL NEVER BE*/
+
+        auto& c = Collector::get_instance();
+        c.clear_symbols_and_literals();
+    }
 ;
 end_directive:
     END {

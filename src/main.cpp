@@ -29,18 +29,19 @@ auto test_parser(std::string file_name) -> void {
 
 auto main(int argc, char** argv) -> int {
     env env_obj(argc, argv);
-
-    test_parser("main.s");
+    std::cout << "OVDE";
+    test_parser(env_obj.get()[1]);
     
     try {
     Asembler asm_control;
     asm_control.asemble();
     } catch (std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
-    }
+    } 
 
     Asembler::print_section_table();
     Asembler::print_symbol_table();
+    Asembler::print_forward_table();
 
     return 0;
 }

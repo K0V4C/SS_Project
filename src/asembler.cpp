@@ -16,6 +16,8 @@ std::map<std::string, Asembler::section_struct> Asembler::section_table = std::m
 
 std::vector<std::unique_ptr<action>> Asembler::file_actions = std::vector<std::unique_ptr<action>>();
 
+std::map<std::string, Asembler::forward_struct> Asembler::forward_table = std::map<std::string, Asembler::forward_struct>();
+
 std::map<std::string, Asembler::symbol_struct> Asembler::symbol_table = std::map<std::string, Asembler::symbol_struct>();
 
 /*
@@ -79,6 +81,91 @@ Asembler::~Asembler() {}
 
 /*
  *
+ *      FORWARD TABLE
+ *
+ *
+ *
+ */
+
+Asembler::forward_struct::forward_struct(){}
+
+// This should be called on every place that is using a symbol
+auto Asembler::link_symbol(std::string symbol, uint32_t location) -> void {
+
+    // Check if it is defined
+    // If it defined we don't do anything anymore everything will be resolved at the end
+
+    auto it = Asembler::symbol_table.find(symbol);
+    if(it != Asembler::symbol_table.end()) {
+        return;
+    }
+
+    // If it is not defined add it to table
+
+    auto new_entry = Asembler::forward_table.find(symbol);
+
+    if(new_entry == Asembler::forward_table.end()) {
+        Asembler::forward_table[symbol] = {};
+    }
+
+    Asembler::forward_table[symbol].symbol_name = symbol;
+    Asembler::forward_table[symbol].locations.push_back(location);
+
+}
+
+std::ostream& operator<<(std::ostream& os, const Asembler::forward_struct& obj) {
+
+     {  
+        os      << std::setw(20)    << obj.symbol_name << "  | ";
+
+        auto i = 0;
+
+        for (auto e : obj.locations) {
+
+            if(i++ >= 9) {  os << " ... "; break;   }
+
+            os  << std::setw(10)    << e    << "| ";
+        }
+    }
+
+    return os;
+}
+
+
+auto Asembler::print_forward_table() -> void {
+
+    Asembler::link_symbol(std::string("pokusaj"),10);
+    Asembler::link_symbol(std::string("pokusaj"),20);
+    Asembler::link_symbol(std::string("pokusaj"),30);
+    Asembler::link_symbol(std::string("pokusaj"),40);
+
+    Asembler::link_symbol(std::string("sss"),10);
+    Asembler::link_symbol(std::string("sss"),20);
+    Asembler::link_symbol(std::string("sss"),30);
+    Asembler::link_symbol(std::string("sss"),40);
+
+
+    std::cout << "\n\nForward Table:\n"; 
+    {
+        std::cout << std::setw(20) << std::left    << "Symbol"        << "  | "
+                  << std::setw(85) << std::left    << "Values"         << " | \n";
+    }
+
+    
+    {
+        for(auto& e : Asembler::forward_table) {
+            std::cout << e.second << std::endl;
+        }
+    }
+}
+
+
+Asembler::forward_struct::~forward_struct(){}
+
+
+
+/*
+ *
  *      SECTION TABLE 
  *
  *
@@ -93,7 +180,7 @@ Asembler::section_struct::section_struct ( std::string name)
         relocations({}),
         binary_data({}){}
 
-auto Asembler::section_struct::add_realocation(
+auto Asembler::section_struct::add_relocation(
         uint32_t offset,
         RELOCATION_TYPE type,
         std::string symbol,
@@ -150,7 +237,6 @@ auto Asembler::print_section_table() -> void {
     
     {
         for(auto& e : Asembler::section_table) {
-            e.second.relocations.push_back({});
             std::cout << e.second << std::endl;
         }
     }

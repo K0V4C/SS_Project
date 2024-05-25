@@ -37,23 +37,6 @@ auto Collector::clear_symbols_and_literals() -> void {
     this->symbols_and_literals.clear();
 }
 
-
-/*
- *
- *      WORKING WITH BRANCH OPERAND
- *
- *
- */
-
-auto Collector::set_branch_operand(std::variant<std::string, int32_t> s) -> void {
-   this->branch_operand = s; 
-}
-
-auto Collector::get_branch_operand() -> const std::variant<std::string, int32_t> {
-    return branch_operand;
-}
-// No need to clear this ever
-
 /*
  *
  *    WORKING WITH GPRS

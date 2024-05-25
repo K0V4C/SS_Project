@@ -13,10 +13,6 @@ public:
  
     static auto get_instance() -> Collector&;
 
-    auto set_branch_operand(sym_or_lit)-> void;
-    auto get_branch_operand() -> const sym_or_lit; 
-    // No need to clear this ever
-
     auto append_gpr(uint8_t) -> void;
     auto get_gpr_list() -> std::vector<uint8_t>;
     auto clear_gpr_list() -> void;

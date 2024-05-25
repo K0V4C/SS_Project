@@ -11,7 +11,8 @@ const char* symbol_type_2_string(SYMBOL_TYPE s);
 
 enum class SYMBOL_BIND {
     LOCAL,
-    EXTERN
+    EXTERN,
+    GLOBAL
 };
 
 const char* symbol_bind_2_string(SYMBOL_BIND s);
@@ -24,7 +25,9 @@ const char* relocation_type_2_string(RELOCATION_TYPE s);
 
 enum class REGISTERS {
     PC = 15,
-    SP = 14
+    SP = 14,
+    STATUS  = 0,
+    HANDLER = 1,
+    CAUSE   = 2
 };
-
 #endif // _TYPES_HPP 

@@ -19,14 +19,15 @@ auto combine
     int32_t displ
 )-> uint32_t {
     
-    // TODO: fix this
+    // TODO: figure out if this works
+    // This hould store it in big endina into to_ret and then writing it to mem in little endian
 
     uint32_t to_ret = 0;
 
     uint32_t nibble_little_endian = 0                     |
-                                    ((displ & 0xf) << 8)  | 
-                                    ((displ & 0xf0) << 12)|
-                                    ((displ & 0xf00) >>8) ;
+                                    ((displ & 0xf))       | 
+                                    ((displ & 0xf0))      |
+                                    ((displ & 0xf00))     ;
 
     to_ret =    (op_code & 0xf) << 28               |
                 (mode & 0xf)    << 24               |
@@ -86,6 +87,212 @@ auto instruction_halt::execute() -> void {
 }
 
 instruction_halt::~instruction_halt() {}
+
+// 
+//
+//      INSTRUCTION INT
+//
+//
+
+instruction_int::instruction_int(){}
+
+auto instruction_int::execute() -> void {
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_int::op_code,
+                instruction_int::mode,
+                0,
+                0,
+                0,
+                0
+            )
+    );
+ 
+}
+
+instruction_int::~instruction_int() {}
+
+//
+//
+//      INSTRUCTION IRET
+//
+//
+
+instruction_iret::instruction_iret(){}
+
+auto instruction_iret::execute() -> void {
+   
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_iret::op_code,
+                instruction_iret::pop_pc,
+                static_cast<uint8_t>(REGISTERS::PC),
+                static_cast<uint8_t>(REGISTERS::SP),
+                0,
+                -4
+            )
+    );
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_iret::op_code,
+                instruction_iret::pop_status,
+                static_cast<uint8_t>(REGISTERS::STATUS),
+                static_cast<uint8_t>(REGISTERS::SP),
+                0,
+                -4
+            )
+    );
+}
+
+instruction_iret::~instruction_iret() {}
+
+//
+//
+//      INSTRUCTION CALL
+//
+//
+
+instruction_call::instruction_call(std::variant<std::string, int32_t> operand)
+    : operand(operand){}
+
+auto instruction_call::execute() -> void {
+
+    std::cout << "ovde smo" << std::endl;return;
+
+    auto& section = Asembler::get_current_section();
+
+    uint8_t gpr_b = 0;
+    uint8_t gpr_c = static_cast<uint8_t>(REGISTERS::PC);
+
+    // If passed operand is a literal
+
+    if(std::holds_alternative<int32_t>(operand)) {
+
+        auto literal = std::get<int32_t>(operand);
+
+        // This is if literal can be placed inside displacement
+        if(literal > std::pow(-2, 11) and literal < std::pow(2, 11)) {
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_call::op_code,
+                    instruction_call::mode_displ, 
+                    static_cast<uint8_t>(REGISTERS::PC),
+                    gpr_b,
+                    gpr_c,
+                    literal < 0 ? literal | 0x8000 : literal
+                )
+            );
+            return;
+        }
+
+        // If it cannot be placed inside displacement
+
+        section.binary_data.add_instruction (
+            combine(
+                instruction_call::op_code,
+                instruction_call::mode_not_displ, 
+                static_cast<uint8_t>(REGISTERS::PC),
+                gpr_b,
+                gpr_c,
+                4
+            )
+        );
+
+        add_leap();
+        reserve_4B(literal);
+        return;
+    }
+
+
+    // Now the symbol part
+
+    auto _symbol = std::get<std::string>(operand);
+    auto it = Asembler::symbol_table.find(_symbol);
+
+    // There is only one case when we can leave displacement for symbol
+    // That is is if is defined, in the same section and < 2^12
+
+    if  ( 
+            it != Asembler::symbol_table.end() and 
+            Asembler::symbol_table[_symbol].ndx == Asembler::get_current_section().section_idx and 
+            (Asembler::get_section_counter() - Asembler::symbol_table[_symbol].value) < std::pow(2,12)
+        ) {    
+
+        // SYMBOL EXISTS AND IS DEFINED
+
+        section.binary_data.add_instruction (
+            combine(
+                instruction_call::op_code,
+                instruction_call::mode_displ, 
+                static_cast<uint8_t>(REGISTERS::PC),
+                gpr_b,
+                gpr_c,
+                (Asembler::symbol_table[_symbol].value - Asembler::get_section_counter()) | 0x8000 // should always be negative?
+            )
+        );
+
+        return;
+    }
+
+
+    // Symbol not defined, we have to leave reloaciton data
+
+    section.binary_data.add_instruction (
+        combine(
+            instruction_call::op_code,
+            instruction_call::mode_not_displ, 
+            static_cast<uint8_t>(REGISTERS::PC),
+            gpr_b,
+            gpr_c,
+            4
+        )
+    );
+
+    add_leap();
+    section.add_relocation(
+        Asembler::get_section_counter(),
+        RELOCATION_TYPE::ABS32,
+        _symbol,
+        0
+    );
+    reserve_4B(0);
+    return;
+}
+
+instruction_call::~instruction_call() {}
+
+
+//
+//
+//      INSTRUCTION ret
+//
+//
+
+instruction_ret::instruction_ret(){}
+
+auto instruction_ret::execute() -> void {
+
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_ret::op_code,
+                instruction_ret::mode,
+                static_cast<uint8_t>(REGISTERS::PC),
+                static_cast<uint8_t>(REGISTERS::SP),
+                0,
+                -4
+            )
+    );
+
+}
+
+instruction_ret::~instruction_ret() {}
 
 // 
 //
@@ -186,7 +393,7 @@ auto branch::execute_branch(uint8_t branch_displ, uint8_t branch_not_displ) -> v
     );
 
     add_leap();
-    section.add_realocation(
+    section.add_relocation(
         Asembler::get_section_counter(),
         RELOCATION_TYPE::ABS32,
         _symbol,
@@ -258,6 +465,62 @@ auto instruction_bgt::execute() -> void {
 }
 
 instruction_bgt::~instruction_bgt() {}
+
+//
+//
+//      INSTRUCTION PUSH
+//
+//
+
+instruction_push::instruction_push(uint8_t reg)
+    : reg(reg){}
+
+auto instruction_push::execute() -> void {
+
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_push::op_code,
+                instruction_push::mode,
+                static_cast<uint8_t>(REGISTERS::SP),
+                0,
+                reg,
+                4
+            )
+    );
+
+}
+
+instruction_push::~instruction_push() {}
+
+//
+//
+//      INSTRUCTION POP
+//
+//
+
+instruction_pop::instruction_pop(uint8_t reg)
+    : reg(reg){}
+
+auto instruction_pop::execute() -> void {
+
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_pop::op_code,
+                instruction_pop::mode,
+                reg,
+                static_cast<uint8_t>(REGISTERS::SP),
+                0,
+                -4
+            )
+    );
+
+}
+
+instruction_pop::~instruction_pop() {}
 
 //
 //
@@ -565,11 +828,22 @@ instruction_shr::~instruction_shr() {}
 //
 //
 
-instruction_csrrd::instruction_csrrd(uint8_t gpr_d)
-    : gpr_d(gpr_d){}
+instruction_csrrd::instruction_csrrd(uint8_t gpr_d, REGISTERS csr)
+    : gpr_d(gpr_d), csr(csr){}
 
 auto instruction_csrrd::execute() -> void {
-    // TODO:
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_csrrd::op_code,
+                instruction_csrrd::mode,
+                static_cast<uint8_t>(csr),
+                static_cast<uint8_t>(csr),
+                gpr_d,
+                0
+            )
+    );
 }
 
 instruction_csrrd::~instruction_csrrd() {}
@@ -579,11 +853,22 @@ instruction_csrrd::~instruction_csrrd() {}
 //      INSTRUCTION csrwr
 //
 
-instruction_csrwr::instruction_csrwr(uint8_t gpr_d)
-    : gpr_d(gpr_d){}
+instruction_csrwr::instruction_csrwr(uint8_t gpr_s, REGISTERS csr)
+    : gpr_s(gpr_s), csr(csr){}
 
 auto instruction_csrwr::execute() -> void {
-    // TODO:
+    auto& section = Asembler::get_current_section();
+
+    section.binary_data.add_instruction(
+        combine(
+                instruction_csrwr::op_code,
+                instruction_csrwr::mode,
+                gpr_s,
+                gpr_s,
+                static_cast<uint8_t>(csr),
+                0
+            )
+    );
 }
 
 instruction_csrwr::~instruction_csrwr() {}

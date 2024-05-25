@@ -19,7 +19,8 @@ const char* symbol_bind_2_string(SYMBOL_BIND s) {
     const std::map<SYMBOL_BIND, const char*> enum_strings
     {
         {SYMBOL_BIND::LOCAL, "LOCAL"},
-        {SYMBOL_BIND::EXTERN,  "EXTERN"}
+        {SYMBOL_BIND::EXTERN,  "EXTERN"},
+        {SYMBOL_BIND::GLOBAL, "GLOBAL"}
     };
    
     auto it  = enum_strings.find(s);
