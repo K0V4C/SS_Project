@@ -30,4 +30,17 @@ enum class REGISTERS {
     HANDLER = 1,
     CAUSE   = 2
 };
+
+enum class OPERANDS {
+
+    D_LIT,
+    D_SYM,
+    LIT,
+    SYM,
+    REG,
+    REG_IND,
+    REG_IND_DISP_SYM,
+    REG_IND_DISP_LIT
+
+};
 #endif // _TYPES_HPP 

@@ -104,17 +104,6 @@ literal:
 |   HEX_NUM     { $$ = $1;}
 ;
 
-operand:
-    DOLLAR_SIGN literal {;}
-|   DOLLAR_SIGN IDENTIFIER {;}
-|   literal {;}
-|   IDENTIFIER {;}
-|   gpr {;}
-|   LEFT_BRACKET gpr RIGHT_BRACKET {;}
-|   LEFT_BRACKET gpr PLUS literal RIGHT_BRACKET {;}
-|   LEFT_BRACKET gpr PLUS IDENTIFIER RIGHT_BRACKET {;}
-;
-
 branch_operand:
     IDENTIFIER {
         sym_or_lit op;
@@ -441,12 +430,69 @@ shr_instruction:
     }
 ;
 
-ld_instrucion:
-    LD operand COMMA gpr {/*HELL*/}
+operand:
+    DOLLAR_SIGN literal {;}
+|   DOLLAR_SIGN IDENTIFIER {;}
+|   literal {;}
+|   IDENTIFIER {;}
+|   gpr {;}
+|   LEFT_BRACKET gpr RIGHT_BRACKET {;}
+|   LEFT_BRACKET gpr PLUS literal RIGHT_BRACKET {;}
+|   LEFT_BRACKET gpr PLUS IDENTIFIER RIGHT_BRACKET {;}
 ;
 
-st_instruction:
-    ST gpr COMMA operand {/*HELL*/}
+operand:
+    LD DOLLAR_SIGN literal COMMA gpr {
+        
+    }
+|   LD DOLLAR_SIGN IDENTIFIER COMMA gpr {
+
+    }
+|   LD literal COMMA gpr {
+
+    }
+|   LD IDENTIFIER COMMA gpr {
+
+    }
+|   LD gpr COMMA gpr {
+
+    }
+|   LD LEFT_BRACKET gpr RIGHT_BRACKET COMMA gpr {
+
+    }
+|   LD LEFT_BRACKET gpr PLUS literal RIGHT_BRACKET COMMA gpr {
+
+    }
+|   LD LEFT_BRACKET gpr PLUS IDENTIFIER RIGHT_BRACKET COMMA gpr {
+
+    }
+;
+
+operand:
+    ST gpr COMMA DOLLAR_SIGN literal {
+
+    }
+|   ST gpr COMMA DOLLAR_SIGN IDENTIFIER {
+
+    }
+|   ST gpr COMMA literal {
+
+    }
+|   ST gpr COMMA IDENTIFIER {
+
+    }
+|   ST gpr COMMA gpr {
+
+    }
+|   ST gpr COMMA LEFT_BRACKET gpr RIGHT_BRACKET {
+
+    }
+|   ST gpr COMMA LEFT_BRACKET gpr PLUS literal RIGHT_BRACKET {
+
+    }
+|   ST gpr COMMA LEFT_BRACKET gpr PLUS IDENTIFIER RIGHT_BRACKET {
+
+    }
 ;
 
 csrrd_instruction:

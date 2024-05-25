@@ -548,5 +548,66 @@ private:
 };
 
 
+//
+//
+//      INSTRUCTION LD
+//
+//
+
+struct instruction_ld : public action {
+    
+    instruction_ld(
+        std::variant<std::string, int32_t> symbol_or_literal,
+        uint8_t gpr_s,
+        uint8_t gpr_d,
+        OPERANDS op_type
+    );
+
+    virtual auto execute() -> void override;
+ 
+    virtual ~instruction_ld();
+
+    // TODO:
+    static uint8_t constexpr op_code = 0b1001;
+    static uint8_t constexpr mode    = 0b0100;  
+
+private:
+        std::variant<std::string, int32_t> symbol_or_literal;
+        uint8_t gpr_s;
+        uint8_t gpr_d;
+        OPERANDS op_type;
+};
+
+//
+//
+//      INSTRUCTION ST
+//
+//
+
+struct instruction_st : public action {
+    
+    instruction_st(
+        std::variant<std::string, int32_t> symbol_or_literal,
+        uint8_t gpr_s,
+        uint8_t gpr_d,
+        OPERANDS op_type
+    );
+
+    virtual auto execute() -> void override;
+ 
+    virtual ~instruction_st();
+
+    // TODO:
+    static uint8_t constexpr op_code = 0b1001;
+    static uint8_t constexpr mode    = 0b0100;  
+
+private:
+        std::variant<std::string, int32_t> symbol_or_literal;
+        uint8_t gpr_s;
+        uint8_t gpr_d;
+        OPERANDS op_type;
+};
+
+
 
 #endif // _INSTRUCTION_ACTIONS_HPP

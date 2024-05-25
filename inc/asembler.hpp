@@ -101,6 +101,7 @@ public:
         ~forward_struct();
 
         std::string symbol_name;
+        
         std::vector<uint32_t> locations;
 
         friend std::ostream& operator<<(std::ostream& os, const forward_struct& obj);
@@ -139,7 +140,6 @@ public:
     static std::string current_section;
 
     static std::map<std::string, Asembler::section_struct> section_table;
-
 
     static auto print_section_table() -> void;
 };

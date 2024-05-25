@@ -872,3 +872,107 @@ auto instruction_csrwr::execute() -> void {
 }
 
 instruction_csrwr::~instruction_csrwr() {}
+
+//
+//
+//      INSTRUCTION ld
+//
+
+instruction_ld::instruction_ld(
+        std::variant<std::string, int32_t> symbol_or_literal,
+        uint8_t gpr_s,
+        uint8_t gpr_d,
+        OPERANDS op_type
+): symbol_or_literal(symbol_or_literal), gpr_s(gpr_s), gpr_d(gpr_d), op_type(op_type){}
+
+auto instruction_ld::execute() -> void {
+
+    auto& section = Asembler::get_current_section();
+
+    switch (op_type)
+    {
+    case OPERANDS::D_LIT:
+        /* code */
+        break;
+    case OPERANDS::D_SYM:
+        /* code */
+        break;
+    case OPERANDS::LIT:
+        /* code */
+        break;
+    case OPERANDS::SYM:
+        /* code */
+        break;
+    case OPERANDS::REG:
+        /* code */
+        break;
+    case OPERANDS::REG_IND:
+        /* code */
+        break;
+    case OPERANDS::REG_IND_DISP_LIT:
+        /* code */
+        break;
+    case OPERANDS::REG_IND_DISP_SYM:
+        /* code */
+        break;
+    default:
+        throw std::runtime_error("LD INSTR ERROR");
+        break;
+    }
+
+}
+
+instruction_ld::~instruction_ld() {}
+
+
+//
+//
+//      INSTRUCTION st
+//
+
+instruction_st::instruction_st(
+        std::variant<std::string, int32_t> symbol_or_literal,
+        uint8_t gpr_s,
+        uint8_t gpr_d,
+        OPERANDS op_type
+): symbol_or_literal(symbol_or_literal), gpr_s(gpr_s), gpr_d(gpr_d), op_type(op_type){}
+
+auto instruction_st::execute() -> void {
+
+        auto& section = Asembler::get_current_section();
+
+    switch (op_type)
+    {
+    case OPERANDS::D_LIT:
+        /* code */
+        break;
+    case OPERANDS::D_SYM:
+        /* code */
+        break;
+    case OPERANDS::LIT:
+        /* code */
+        break;
+    case OPERANDS::SYM:
+        /* code */
+        break;
+    case OPERANDS::REG:
+        /* code */
+        break;
+    case OPERANDS::REG_IND:
+        /* code */
+        break;
+    case OPERANDS::REG_IND_DISP_LIT:
+        /* code */
+        break;
+    case OPERANDS::REG_IND_DISP_SYM:
+        /* code */
+        break;
+    default:
+        throw std::runtime_error("ST INSTR ERROR");
+        break;
+    }
+
+}
+
+instruction_st::~instruction_st() {}
+
