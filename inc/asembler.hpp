@@ -49,6 +49,8 @@ public:
 
         friend std::ostream& operator<<(std::ostream&, const symbol_struct& obj);
 
+        auto serialize(std::ofstream& binary_file) -> void;
+
     };
 
     static std::map<std::string, Asembler::symbol_struct> symbol_table;
@@ -131,17 +133,22 @@ public:
 
         friend std::ostream& operator<<(std::ostream& os, const section_struct& obj);
 
+        auto serialize(std::ofstream& binary_file) -> void;
+
     };
 
     // Used to help find values
     static auto get_section_counter() -> uint32_t;
     static auto get_current_section() -> section_struct&;
-    // Used to figure out current_section
+        // Used to figure out current_section
     static std::string current_section;
 
     static std::map<std::string, Asembler::section_struct> section_table;
 
     static auto print_section_table() -> void;
+
+    static auto serialize(std::string file_name) -> void;
+
 };
 
 

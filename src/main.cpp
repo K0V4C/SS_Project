@@ -43,5 +43,7 @@ auto main(int argc, char** argv) -> int {
     Asembler::print_symbol_table();
     Asembler::print_forward_table();
 
+    Asembler::serialize("output.bin");
+
     return 0;
 }

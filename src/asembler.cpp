@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <iomanip>
+#include <fstream>
 
 /*
  *
@@ -226,6 +227,15 @@ std::ostream& operator<<(std::ostream& os, const Asembler::section_struct& obj) 
     return os;
 }
 
+auto Asembler::section_struct::serialize(std::ofstream& binary_file) -> void {
+
+    binary_file.write(reinterpret_cast<const char*>(section_idx), sizeof(section_idx));
+    binary_file.write(reinterpret_cast<const char*>(section_idx), sizeof(section_idx));
+
+
+}
+
+
 auto Asembler::print_section_table() -> void {
     
     std::cout << "\n\nSection Table:\n"; 
@@ -325,5 +335,32 @@ auto Asembler::print_symbol_table() -> void {
     for(auto& e: Asembler::symbol_table) {
         std::cout << e.second << std::endl;
     }
+
+}
+
+auto Asembler::symbol_struct::serialize(std::ofstream& binary_file) -> void {
+
+    binary_file.write(reinterpret_cast<const char*>(&symbol_idx), sizeof(symbol_idx));
+    binary_file.write(reinterpret_cast<const char*>(&value), sizeof(value));
+    binary_file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    binary_file.write(reinterpret_cast<const char*>(&symbol_type), sizeof(symbol_type));
+    binary_file.write(reinterpret_cast<const char*>(&symbol_bind), sizeof(symbol_bind));
+    binary_file.write(reinterpret_cast<const char*>(&ndx), sizeof(ndx));
+    binary_file.write(reinterpret_cast<const char*>(symbol_name.data()), symbol_name.size() + 1);
+
+}
+
+
+auto Asembler::serialize(std::string file_name) -> void {
+
+    std::ofstream binary_file(file_name, std::ios::out | std::ios::binary);
+    const auto symbol_table_size = symbol_table.size();
+    binary_file.write(reinterpret_cast<const char*>(&symbol_table_size), sizeof(symbol_table_size));
+
+    for(auto e : symbol_table) {
+        e.second.serialize(binary_file);
+    }
+
+
 
 }
