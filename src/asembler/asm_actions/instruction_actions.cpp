@@ -4,8 +4,8 @@
  *      ==============
  */
 
-#include "../../inc/asm_actions/instruction_actions.hpp"
-#include "../../inc/asembler.hpp"
+#include "inc/asembler/asm_actions/instruction_actions.hpp"
+#include "inc/asembler/asembler.hpp"
 
 #include <cmath>
 

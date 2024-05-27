@@ -6,6 +6,7 @@
 #include <vector>
 
 extern FILE* yyin;
+
 extern int yyparse();
 extern void yyerror(const char* s);
 

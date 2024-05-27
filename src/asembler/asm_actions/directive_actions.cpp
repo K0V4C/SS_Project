@@ -5,8 +5,8 @@
  *      ============
  */
 
-#include "../../inc/asm_actions/directive_actions.hpp"
-#include "../../inc/asembler.hpp"
+#include "inc/asembler/asm_actions/directive_actions.hpp"
+#include "inc/asembler/asembler.hpp"
 #include <cstdint>
 #include <stdexcept>
 #include <variant>
@@ -33,6 +33,7 @@ auto directive_global::execute() -> void {
         } else {
             
             Asembler::symbol_table[symbol] = {
+                Asembler::next_symbol_idx++,
                 Asembler::get_section_counter(),
                 0,
                 SYMBOL_TYPE::NOTYP,
@@ -63,6 +64,7 @@ auto directive_extern::execute() -> void {
         } else {
             
             Asembler::symbol_table[symbol] = {
+                Asembler::next_symbol_idx++,
                 Asembler::get_section_counter(),
                 0,
                 SYMBOL_TYPE::NOTYP,
@@ -95,6 +97,7 @@ auto directive_section::execute() -> void {
     }
 
     Asembler::section_table[section_name] = {
+        Asembler::next_section_idx++,
         section_name // empty relocation table at the start 
     };
 
@@ -109,6 +112,7 @@ auto directive_section::execute() -> void {
     }
 
      Asembler::symbol_table[section_name] = {
+        Asembler::next_symbol_idx++,
         0,
         0,
         SYMBOL_TYPE::SCTN,

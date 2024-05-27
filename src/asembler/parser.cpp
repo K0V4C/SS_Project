@@ -1,10 +1,9 @@
-#include "../inc/parser.hpp"
+#include "../../inc/asembler/parser.hpp"
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <ostream>
-
 
 std::vector<std::string> Parser::token_log = std::vector<std::string>();
 

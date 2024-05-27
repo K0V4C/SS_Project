@@ -1,4 +1,4 @@
-#include "../inc/collector.hpp"
+#include "../../inc/asembler/collector.hpp"
 
 Collector* Collector::instance = nullptr;
 

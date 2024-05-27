@@ -3,13 +3,12 @@ LEXER = flex
 BISON = bison
 
 PFLAGS = -d -t
-CFLAGS = -Iinc -Iinc/asm_actions -I. -std=c++17 -Ifl
+CFLAGS = -Ifl -Iinc/asembler/asm_actions -I/inc/common -I. -std=c++17
 
 BISON_FILE = misc/bison_gen.ypp
 FLEX_FILE = misc/flex_gen.lpp
 
-SOURCES = $(wildcard *.cpp) $(wildcard src/*.cpp) $(wildcard src/asm_actions/*.cpp) $(wildcard *.c)
-
+SOURCES = $(wildcard *.cpp) $(wildcard *.c) $(wildcard src/asembler/*.cpp) $(wildcard src/common/*.cpp) $(wildcard src/asembler/asm_actions/*.cpp) 
 
 bison_gen.tab.cpp bison_gen.tab.hpp: $(BISON_FILE)
 	$(BISON) $(PFLAGS) $(BISON_FILE)
@@ -25,3 +24,4 @@ clean:
 	rm -f asembler.out  
 	rm -f bison_gen.tab.cpp bison_gen.tab.hpp
 	rm -f lex.yy.c
+	rm -f *.o

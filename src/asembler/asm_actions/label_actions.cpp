@@ -4,8 +4,8 @@
  *      =======
  */
 
-#include "../../inc/asm_actions/label_actions.hpp"
-#include "../../inc/asembler.hpp"
+#include "inc/asembler/asm_actions/label_actions.hpp"
+#include "inc/asembler/asembler.hpp"
 #include <stdexcept>
 
 label::label(std::string name) : symbol_name(name){}
@@ -41,6 +41,7 @@ auto label::execute() -> void {
     
     // Create new symbol
     Asembler::symbol_table[symbol_name] = {
+        Asembler::next_symbol_idx++,
         Asembler::get_section_counter(),
         0,
         SYMBOL_TYPE::NOTYP,

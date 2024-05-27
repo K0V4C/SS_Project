@@ -1,7 +1,6 @@
 #ifndef _TYPES_HPP
 #define _TYPES_HPP
 
-
 enum class SYMBOL_TYPE {
     NOTYP,
     SCTN

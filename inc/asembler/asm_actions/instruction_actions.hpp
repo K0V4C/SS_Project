@@ -1,7 +1,7 @@
 #ifndef _INSTRUCTION_ACTIONS_HPP
 #define _INSTRUCTION_ACTIONS_HPP
 
-#include "../types.hpp"
+#include "inc/common/types.hpp"
 
 #include "actions.hpp"
 #include <cstdint>

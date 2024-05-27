@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "bison_gen.tab.hpp"
-#include "../inc/parser.hpp"
+#include "inc/asembler/parser.hpp"
 
 %}
 

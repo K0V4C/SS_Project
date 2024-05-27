@@ -1,4 +1,4 @@
-#include "../inc/types.hpp"
+#include "../../inc/common/types.hpp"
 
 #include <map>
 

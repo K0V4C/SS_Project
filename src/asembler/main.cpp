@@ -1,6 +1,6 @@
-#include "../inc/parser.hpp"
-#include "../inc/env.hpp"
-#include "../inc/asembler.hpp"
+#include "../../inc/asembler/parser.hpp"
+#include "inc/asembler/env.hpp"
+#include "inc/asembler/asembler.hpp"
 #include <iostream>
 #include <stdexcept>
 
@@ -29,8 +29,7 @@ auto test_parser(std::string file_name) -> void {
 
 auto main(int argc, char** argv) -> int {
     env env_obj(argc, argv);
-    std::cout << "OVDE";
-    test_parser(env_obj.get()[1]);
+    test_parser(env_obj.input_file());
     
     try {
     Asembler asm_control;
@@ -43,7 +42,7 @@ auto main(int argc, char** argv) -> int {
     Asembler::print_symbol_table();
     Asembler::print_forward_table();
 
-    Asembler::serialize("output.bin");
+    Asembler::serialize(env_obj.output_file());
 
     return 0;
 }

@@ -6,20 +6,20 @@
 #include <memory>
 #include <stdint.h>
 #include <variant>
-#include "../inc/parser.hpp"
-#include "../inc/collector.hpp"
+#include "inc/asembler/parser.hpp"
+#include "inc/asembler/collector.hpp"
 
-#include "../inc/asembler.hpp"
-#include "../inc/asm_actions/actions.hpp"
-#include "../inc/asm_actions/directive_actions.hpp"
-#include "../inc/asm_actions/instruction_actions.hpp"
-#include "../inc/asm_actions/label_actions.hpp"
+#include "inc/asembler/asembler.hpp"
+#include "inc/asembler/asm_actions/actions.hpp"
+#include "inc/asembler/asm_actions/directive_actions.hpp"
+#include "inc/asembler/asm_actions/instruction_actions.hpp"
+#include "inc/asembler/asm_actions/label_actions.hpp"
 
 extern int yylex();
 extern int yyparse();
 extern FILE* yyin;
 
-void yyerror(const char *s);
+extern int yylex(void);
 %}
 
 
