@@ -92,6 +92,9 @@ csrwr       {std::string new_token("CSRRW"); Parser::log_token(new_token); retur
 {symbol}    {
                 std::string new_token("IDENTIFIER"); Parser::log_token(new_token);
                 yylval.sym = yytext;
+
+                std::cout << yytext << std::endl;
+
                 return IDENTIFIER;
             }
 {new_line}  {std::string new_token("NEW_LINE"); Parser::log_token(new_token); return NEW_LINE;}

@@ -598,9 +598,9 @@ struct instruction_st : public action {
  
     virtual ~instruction_st();
 
-    // TODO:
-    static uint8_t constexpr op_code = 0b1001;
-    static uint8_t constexpr mode    = 0b0100;  
+    static uint8_t constexpr op_code    = 0b1001;
+    static uint8_t constexpr mem_gpr    = 0b0000;
+    static uint8_t constexpr mem_mem_gpr= 0b0010;  
 
 private:
         std::variant<std::string, int32_t> symbol_or_literal;

@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <fstream>
+#include <iostream>
 
 /*
  *
@@ -70,6 +71,19 @@ auto section_struct::serialize(std::ofstream& binary_file) -> void {
 
     // Now write binary 
 
+    for(int i = 0; i < 60; i++ ) {
+        const auto t = 0xff;
+        binary_file.write(reinterpret_cast<const char*> (&t), sizeof(t));
+    }
+
+    const auto binary_size = binary_data.raw.size();
+    binary_file.write(reinterpret_cast<const char*>(&binary_size), sizeof(binary_size));
+
+    std::cout << "binary size: " << binary_size;
     binary_data.serialize(binary_file);
+
+}
+
+auto section_struct::deserialize(std::ifstream& binary_file) -> void {
 
 }

@@ -16,7 +16,7 @@ bison_gen.tab.cpp bison_gen.tab.hpp: $(BISON_FILE)
 lex.yy.c: $(FLEX_FILE) bison_gen.tab.hpp 
 	$(LEXER) $(FLEX_FILE)
 
-create: bison_gen.tab.cpp bison_gen.tab.hpp lex.yy.c
+asembler: bison_gen.tab.cpp bison_gen.tab.hpp lex.yy.c
 	$(CC) $(CFLAGS) $(SOURCES) -o asembler.out
 
 

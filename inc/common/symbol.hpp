@@ -35,6 +35,7 @@
         friend std::ostream& operator<<(std::ostream&, const symbol_struct& obj);
 
         auto serialize(std::ofstream& binary_file) -> void;
+        static auto deserialize(std::ifstream& binary_file) -> void;
 
     };
 

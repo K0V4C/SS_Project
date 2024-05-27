@@ -63,15 +63,13 @@ program:
 ;
 
 label:
-    IDENTIFIER COLON {
+    symbols COLON {
         
-        // TODO: fix this here for IDENTIFIER 
-
-        auto str = std::string($1);
-        str.pop_back();
+        auto& c = Collector::get_instance();
+        auto sol = c.get_symbols_and_literals()[0];
 
         Asembler::file_actions.push_back(
-            std::make_unique<label>(str)
+            std::make_unique<label>(std::get<std::string>(sol))
         );
     }
 ;
@@ -431,59 +429,45 @@ shr_instruction:
 ;
 
 ld_instruction:
-    LD DOLLAR_SIGN literal COMMA gpr {
+    LD DOLLAR_SIGN symbols COMMA gpr {
+
 
         auto& c = Collector::get_instance();
         auto gpr_regs = c.get_gpr_list();
+        auto sol = c.get_symbols_and_literals()[0];
 
-        sym_or_lit sol = $3;
+        if(std::holds_alternative<std::string>(sol)) {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::D_SYM)
+            ); 
+        } else {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::D_LIT) 
+            ); 
+        }
 
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::D_LIT) 
-        ); 
-
+        c.clear_symbols_and_literals();
         c.clear_gpr_list();
     }
-|   LD DOLLAR_SIGN IDENTIFIER COMMA gpr {
+|   LD symbols COMMA gpr {
 
         auto& c = Collector::get_instance();
         auto gpr_regs = c.get_gpr_list();
+        auto sol = c.get_symbols_and_literals()[0];
 
-        sym_or_lit sol = std::string($3);
+        if(std::holds_alternative<std::string>(sol)) {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::SYM) 
+            );
+        } else {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::LIT) 
+            );
+        }
 
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::D_SYM)
-        ); 
 
+        c.clear_symbols_and_literals();
         c.clear_gpr_list();
-    }
-|   LD literal COMMA gpr {
-
-        auto& c = Collector::get_instance();
-        auto gpr_regs = c.get_gpr_list();
-
-        sym_or_lit sol = $2;
-
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::LIT) 
-        ); 
-
-        c.clear_gpr_list();
-
-    }
-|   LD IDENTIFIER COMMA gpr {
-
-        auto& c = Collector::get_instance();
-        auto gpr_regs = c.get_gpr_list();
-
-        sym_or_lit sol = std::string($2);
-
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_ld>(sol, 0, gpr_regs[0], OPERANDS::SYM) 
-        ); 
-
-        c.clear_gpr_list();
-
     }
 |   LD gpr COMMA gpr {
 
@@ -497,7 +481,6 @@ ld_instruction:
         ); 
 
         c.clear_gpr_list();
-
     }
 |   LD LEFT_BRACKET gpr RIGHT_BRACKET COMMA gpr {
 
@@ -513,89 +496,69 @@ ld_instruction:
         c.clear_gpr_list();
 
     }
-|   LD LEFT_BRACKET gpr PLUS literal RIGHT_BRACKET COMMA gpr {
+|   LD LEFT_BRACKET gpr PLUS symbols RIGHT_BRACKET COMMA gpr {
 
         auto& c = Collector::get_instance();
         auto gpr_regs = c.get_gpr_list();
 
-        sym_or_lit sol = $5;
+        auto sol = c.get_symbols_and_literals()[0];
 
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_ld>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_LIT)
-        ); 
+        if(std::holds_alternative<std::string>(sol)) {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_ld>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_SYM)
+            );
+        } else {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_ld>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_LIT)
+            );
+        }
 
-        c.clear_gpr_list();
-
-    }
-|   LD LEFT_BRACKET gpr PLUS IDENTIFIER RIGHT_BRACKET COMMA gpr {
-
-        auto& c = Collector::get_instance();
-        auto gpr_regs = c.get_gpr_list();
-
-        sym_or_lit sol = std::string($5);
-
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_ld>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_SYM) 
-        ); 
 
         c.clear_gpr_list();
+        c.clear_symbols_and_literals();
+
     }
 ;
 
 st_instruction:
-    ST gpr COMMA DOLLAR_SIGN literal {
+    ST gpr COMMA DOLLAR_SIGN symbols {
         auto& c = Collector::get_instance();
         auto gpr_regs = c.get_gpr_list();
 
-        sym_or_lit sol = $5;
+        auto sol = c.get_symbols_and_literals()[0];
 
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::D_LIT) 
-        ); 
+        if(std::holds_alternative<std::string>(sol)) {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::D_SYM)
+            );
+        } else {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::D_LIT) 
+            ); 
+        }
 
         c.clear_gpr_list();
+        c.clear_symbols_and_literals();
     }
-|   ST gpr COMMA DOLLAR_SIGN IDENTIFIER {
+|   ST gpr COMMA symbols {
 
         auto& c = Collector::get_instance();
         auto gpr_regs = c.get_gpr_list();
 
-        sym_or_lit sol = std::string($5);
+        auto sol = c.get_symbols_and_literals()[0];
 
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::D_SYM)
-        ); 
-
-        c.clear_gpr_list();
-
-    }
-|   ST gpr COMMA literal {
-
-        auto& c = Collector::get_instance();
-        auto gpr_regs = c.get_gpr_list();
-
-        sym_or_lit sol = $4;
-
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::LIT)
-        ); 
+        if(std::holds_alternative<std::string>(sol)) {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::SYM)
+            ); 
+        } else {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::LIT)
+            ); 
+        }
 
         c.clear_gpr_list();
-
-    }
-|   ST gpr COMMA IDENTIFIER {
-
-        auto& c = Collector::get_instance();
-        auto gpr_regs = c.get_gpr_list();
-
-        sym_or_lit sol = std::string($4);
-
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_st>(sol, gpr_regs[0], 0, OPERANDS::SYM)
-        ); 
-
-        c.clear_gpr_list();
-
+        c.clear_symbols_and_literals();
     }
 |   ST gpr COMMA gpr {
 
@@ -609,7 +572,6 @@ st_instruction:
         ); 
 
         c.clear_gpr_list();
-
     }
 |   ST gpr COMMA LEFT_BRACKET gpr RIGHT_BRACKET {
 
@@ -625,33 +587,26 @@ st_instruction:
         c.clear_gpr_list();
 
     }
-|   ST gpr COMMA LEFT_BRACKET gpr PLUS literal RIGHT_BRACKET {
+|   ST gpr COMMA LEFT_BRACKET gpr PLUS symbols RIGHT_BRACKET {
 
         auto& c = Collector::get_instance();
         auto gpr_regs = c.get_gpr_list();
 
-        sym_or_lit sol = $7;
+        auto sol = c.get_symbols_and_literals()[0];
 
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_st>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_LIT)
-        ); 
 
-        c.clear_gpr_list();
-
-    }
-|   ST gpr COMMA LEFT_BRACKET gpr PLUS IDENTIFIER RIGHT_BRACKET {
-
-        auto& c = Collector::get_instance();
-        auto gpr_regs = c.get_gpr_list();
-
-        sym_or_lit sol = std::string($7);
-
-        Asembler::file_actions.push_back(
-            std::make_unique<instruction_st>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_SYM)
-        ); 
+        if(std::holds_alternative<std::string>(sol)) {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_st>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_SYM)
+            ); 
+        } else {
+            Asembler::file_actions.push_back(
+                std::make_unique<instruction_st>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_LIT)
+            ); 
+        }
 
         c.clear_gpr_list();
-
+        c.clear_symbols_and_literals();
     }
 ;
 

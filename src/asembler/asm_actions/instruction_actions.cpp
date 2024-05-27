@@ -29,6 +29,7 @@ auto combine
                                     ((displ & 0xf0))      |
                                     ((displ & 0xf00))     ;
 
+
     to_ret =    (op_code & 0xf) << 28               |
                 (mode & 0xf)    << 24               |
                 (A    & 0xf)    << 20               |
@@ -36,8 +37,8 @@ auto combine
                 (C    & 0xf)    << 12               |
                 (nibble_little_endian & 0xfff);
 
-    return to_ret;
 
+    return to_ret;
 }
 
 auto add_leap() -> void {
@@ -559,7 +560,7 @@ instruction_add::instruction_add(uint8_t gpr_s, uint8_t gpr_d)
     : gpr_s(gpr_s), gpr_d(gpr_d){}
 
 auto instruction_add::execute() -> void {
-   
+
     auto& section = Asembler::get_current_section();
 
     section.binary_data.add_instruction(
@@ -572,7 +573,6 @@ auto instruction_add::execute() -> void {
                 0
             )
     );
-
 
 }
 
@@ -891,51 +891,201 @@ auto instruction_ld::execute() -> void {
 
     switch (op_type)
     {
-    case OPERANDS::D_LIT:
- 
-        break;
     case OPERANDS::D_SYM:
-        /* code */
-        break;
-    case OPERANDS::LIT:
-  
-        break;
-    case OPERANDS::SYM:
-        /* code */
-        break;
-    case OPERANDS::REG:
-        section.binary_data.add_instruction(
-            combine(
-                instruction_ld::op_code,
-                instruction_ld::reg_disp,
-                gpr_d,
-                gpr_s,
-                0,
-                0
-            )
-
-        );
-        break;
-    case OPERANDS::REG_IND:
-        section.binary_data.add_instruction(
-            combine(
-                instruction_ld::op_code,
-                instruction_ld::reg_ind_disp,
-                gpr_d,
-                gpr_s,
-                0,
-                0
-            )
-
-        );
-        break;
-    case OPERANDS::REG_IND_DISP_LIT:
         {
-            auto literal = std::get<int32_t>(this->symbol_or_literal);
-            if(abs(literal) > std::pow(2,12)) {
-                throw std::runtime_error("ld instruction literal too big!");
+            auto _symbol = std::get<std::string>(symbol_or_literal);
+            auto it = Asembler::symbol_table.find(_symbol);
+
+            // There is only one case when we can leave displacement for symbol
+            // That is is if is defined, in the same section and < 2^12
+
+            if  ( 
+                    it != Asembler::symbol_table.end() and 
+                    Asembler::symbol_table[_symbol].ndx == Asembler::get_current_section().section_idx and 
+                    (Asembler::get_section_counter() - Asembler::symbol_table[_symbol].value) < std::pow(2,12)
+                ) {    
+
+                // SYMBOL EXISTS AND IS DEFINED
+
+                auto disp = Asembler::symbol_table[_symbol].value - Asembler::get_section_counter();
+
+                section.binary_data.add_instruction (
+                    combine(
+                        instruction_ld::op_code,
+                        instruction_ld::reg_disp, 
+                        gpr_d,
+                        static_cast<uint8_t>(REGISTERS::PC),
+                        0,
+                        disp | 0x8000 // should always be negative?
+                    )
+                );
+
+                return;
             }
 
+
+            // Symbol not defined, we have to leave reloaciton data
+
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_ld::op_code,
+                    instruction_ld::reg_disp, 
+                    gpr_d,
+                    static_cast<uint8_t>(REGISTERS::PC),
+                    0,
+                    4
+                )
+            );
+
+            add_leap();
+            section.add_relocation(
+                Asembler::get_section_counter(),
+                RELOCATION_TYPE::ABS32,
+                _symbol,
+                0
+            );
+            reserve_4B(0);
+            return;
+        }
+        break;
+    case OPERANDS::D_LIT:
+        {
+            auto literal = std::get<int32_t>(symbol_or_literal);
+
+            // This is if literal can be placed inside displacement
+            if(literal > std::pow(-2, 11) and literal < std::pow(2, 11)) {
+                section.binary_data.add_instruction (
+                    combine(
+                        instruction_ld::op_code,
+                        instruction_ld::reg_disp, 
+                        gpr_d,
+                        0,
+                        0,
+                        literal < 0 ? literal | 0x8000 : literal
+                    )
+                );
+                return;
+            }
+
+            // If it cannot be placed inside displacement
+
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_ld::op_code,
+                    instruction_ld::reg_ind_disp, 
+                    gpr_d,
+                    static_cast<uint8_t>(REGISTERS::PC),
+                    0,
+                    4
+                )
+            );
+
+            add_leap();
+            reserve_4B(literal);
+            return;
+
+        }
+        break;   
+    case OPERANDS::SYM:
+       {
+            auto _symbol = std::get<std::string>(symbol_or_literal);
+
+            // First I need to get symbol into my register so I could dobule inderect
+            // After I have it in register I can go mem[reg] and do the final part
+            // Getting symbol to register might require pool so get_my_symbol can couse that
+
+            instruction_ld get_my_symbol = {
+                    std::variant<std::string, int32_t>(_symbol),
+                    0,
+                    gpr_d,
+                    OPERANDS::D_SYM
+            };
+
+            get_my_symbol.execute();
+
+            // We have symbol in reg_d
+
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_ld::op_code,
+                    instruction_ld::reg_ind_disp, 
+                    gpr_d,
+                    static_cast<uint8_t>(REGISTERS::PC),
+                    0,
+                    4
+                )
+            );
+            return;
+        }
+        break;
+    case OPERANDS::LIT:
+        {
+            auto literal = std::get<int32_t>(symbol_or_literal);
+
+            if (literal < 0) {
+                throw std::runtime_error("ld_err: literal can't be a negative address");
+            }
+
+            // TODO; maybe delete this
+            // This is if literal can be placed inside displacement
+            if(literal < std::pow(2, 11)) {
+                section.binary_data.add_instruction (
+                    combine(
+                        instruction_ld::op_code,
+                        instruction_ld::reg_ind_disp, 
+                        gpr_d,
+                        0,
+                        0,
+                        literal
+                    )
+                );
+                return;
+            }
+
+            // If it cannot be placed inside displacement
+
+            // We have to add 2 isntruction becouse we dont have mem[mem[]]
+
+            instruction_ld get_my_literal = {
+                std::variant<std::string, int32_t>(literal),
+                0,
+                gpr_d,
+                OPERANDS::D_LIT
+            };
+
+            get_my_literal.execute();
+
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_ld::op_code,
+                    instruction_ld::reg_ind_disp, 
+                    gpr_d,
+                    gpr_d,
+                    0,
+                    0
+                )
+            );
+
+            return;
+        }
+        break;  
+    case OPERANDS::REG:
+        {
+            section.binary_data.add_instruction(
+                combine(
+                    instruction_ld::op_code,
+                    instruction_ld::reg_disp,
+                    gpr_d,
+                    gpr_s,
+                    0,
+                    0
+                )
+
+            );
+        }
+        break;
+    case OPERANDS::REG_IND:
+        {
             section.binary_data.add_instruction(
                 combine(
                     instruction_ld::op_code,
@@ -943,14 +1093,53 @@ auto instruction_ld::execute() -> void {
                     gpr_d,
                     gpr_s,
                     0,
-                    literal < 0 ? literal | 0x800 : literal // da li ima potrebe proverava da li je negativno?
+                    0
+                )
+
+            );
+        }
+        break;  
+    case OPERANDS::REG_IND_DISP_LIT:
+        {
+            auto literal = std::get<int32_t>(this->symbol_or_literal);
+
+            if(abs(literal) >= std::pow(2,12)) {
+                throw std::runtime_error("ld instruction literal too big!");
+            }
+
+
+            section.binary_data.add_instruction(
+                combine (
+                    instruction_ld::op_code,
+                    instruction_ld::reg_ind_disp,
+                    gpr_d,
+                    gpr_s,
+                    0,
+                    literal < 0 ? literal | 0x800 : literal
                 )
             );
         }
         break;
     case OPERANDS::REG_IND_DISP_SYM:
-        // TODO: da li mora backpatching za ovo?
-        /* code */
+        {
+
+            auto _symbol = std::get<std::string>(symbol_or_literal);
+            auto it = Asembler::symbol_table.find(_symbol);
+
+            // There is only one case when we can leave displacement for symbol
+            // That is is if is defined, in the same section and < 2^12
+            
+            if  ( 
+                it != Asembler::symbol_table.end() and 
+                Asembler::symbol_table[_symbol].symbol_bind == SYMBOL_BIND::ABSOLUTE
+            ) {    
+                // TODO:
+                return;
+            }
+
+            throw std::runtime_error("ld instruciton: symbol not absolute"); 
+
+        }
         break;
     default:
         throw std::runtime_error("LD INSTR ERROR");
@@ -981,28 +1170,160 @@ auto instruction_st::execute() -> void {
     switch (op_type)
     {
     case OPERANDS::D_LIT:
-        /* code */
+        { 
+            throw std::runtime_error("st error: illegal addressing lit, D_LIT");
+        }
         break;
     case OPERANDS::D_SYM:
-        /* code */
+        { 
+            throw std::runtime_error("st error: illegal addressing sym, D_LIT");
+        }
         break;
     case OPERANDS::LIT:
-        /* code */
+        {
+            auto literal = std::get<int32_t>(symbol_or_literal);
+
+            // This is if literal can be placed inside displacement
+            if(literal < std::pow(2, 11)) {
+                section.binary_data.add_instruction (
+                    combine(
+                        instruction_ld::op_code,
+                        instruction_ld::reg_ind_disp, 
+                        0,
+                        0,
+                        gpr_s,
+                        literal
+                    )
+                );
+                return;
+            }
+
+            // We have to add 2 isntruction becouse we dont have mem[mem[]]
+
+            instruction_ld get_my_literal = {
+                std::variant<std::string, int32_t>(literal),
+                0,
+                gpr_d,
+                OPERANDS::D_LIT
+            };
+
+            get_my_literal.execute();
+
+            // Literal value is inside reg_d now (at least should be)
+
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_st::op_code,
+                    instruction_st::mem_mem_gpr, 
+                    gpr_d,
+                    0,
+                    gpr_s,
+                    0
+                )
+            );
+            return;
+        }
         break;
     case OPERANDS::SYM:
-        /* code */
+        {
+            auto _symbol = std::get<std::string>(symbol_or_literal);
+
+            // First I need to get symbol into my register so I could dobule inderect
+            // After I have it in register I can go mem[reg] and do the final part
+            // Getting symbol to register might require pool so get_my_symbol can couse that
+
+            instruction_ld get_my_symbol = {
+                    std::variant<std::string, int32_t>(_symbol),
+                    0,
+                    gpr_d,
+                    OPERANDS::D_SYM
+            };
+
+            get_my_symbol.execute();
+
+            // We have symbol in reg_d
+
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_st::op_code,
+                    instruction_st::mem_gpr, 
+                    gpr_d,
+                    0,
+                    gpr_s,
+                    0
+                )
+            );
+            return;
+        }
         break;
     case OPERANDS::REG:
-        /* code */
+        {
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_st::op_code,
+                    instruction_st::mem_gpr, 
+                    gpr_d,
+                    0,
+                    gpr_s,
+                    0
+                )
+            );
+        }
         break;
     case OPERANDS::REG_IND:
-        /* code */
+        {
+            section.binary_data.add_instruction (
+                combine(
+                    instruction_st::op_code,
+                    instruction_st::mem_mem_gpr, 
+                    gpr_d,
+                    0,
+                    gpr_s,
+                    0
+                )
+            );
+        }
         break;
     case OPERANDS::REG_IND_DISP_LIT:
-        /* code */
+        {
+            auto literal = std::get<int32_t>(this->symbol_or_literal);
+
+            if(abs(literal) >= std::pow(2,12)) {
+                throw std::runtime_error("ld instruction literal too big!");
+            }
+
+
+            section.binary_data.add_instruction(
+                combine (
+                    instruction_st::op_code,
+                    instruction_st::mem_mem_gpr,
+                    gpr_d,
+                    0,
+                    gpr_s,
+                    literal < 0 ? literal | 0x800 : literal
+                )
+            );
+        }
         break;
     case OPERANDS::REG_IND_DISP_SYM:
-        /* code */
+        {
+            auto _symbol = std::get<std::string>(symbol_or_literal);
+            auto it = Asembler::symbol_table.find(_symbol);
+
+            // There is only one case when we can leave displacement for symbol
+            // That is is if is defined, in the same section and < 2^12
+            
+            if  ( 
+                it != Asembler::symbol_table.end() and 
+                Asembler::symbol_table[_symbol].symbol_bind == SYMBOL_BIND::ABSOLUTE and 
+                (Asembler::get_section_counter() - Asembler::symbol_table[_symbol].value) < std::pow(2,12)
+            ) {    
+                // TODO:
+                return;
+            }
+
+            throw std::runtime_error("ld instruciton: symbol not absolute"); 
+        }
         break;
     default:
         throw std::runtime_error("ST INSTR ERROR");

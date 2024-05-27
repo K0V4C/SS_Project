@@ -11,7 +11,8 @@ const char* symbol_type_2_string(SYMBOL_TYPE s);
 enum class SYMBOL_BIND {
     LOCAL,
     EXTERN,
-    GLOBAL
+    GLOBAL,
+    ABSOLUTE
 };
 
 const char* symbol_bind_2_string(SYMBOL_BIND s);

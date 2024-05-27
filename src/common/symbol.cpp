@@ -44,3 +44,7 @@ auto symbol_struct::serialize(std::ofstream& binary_file) -> void {
     binary_file.write(reinterpret_cast<const char*>(&ndx), sizeof(ndx));
     binary_file.write(reinterpret_cast<const char*>(symbol_name.c_str()), symbol_name.size() + 1);
 }
+
+auto symbol_struct::deserialize(std::ifstream& binary_file) -> void {
+
+}

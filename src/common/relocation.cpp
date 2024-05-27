@@ -39,3 +39,7 @@ auto relocation_struct::serialize(std::ofstream& binary_file) -> void {
     binary_file.write(reinterpret_cast<const char*>(&addend), sizeof(addend));
 
 }
+
+auto relocation_struct::deserialize(std::ifstream& binary_file) -> void {
+
+}

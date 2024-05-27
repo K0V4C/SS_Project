@@ -1,5 +1,5 @@
 #include "inc/common/binary_data.hpp"
-
+#include <iostream>
 /*
  *
  *
@@ -13,7 +13,7 @@ auto binary_data_struct::add_byte(uint8_t byte) -> void{
     raw.push_back(byte);
 }
 
-// TODO: fix this
+// TODO: fix this maybe
 auto binary_data_struct::add_instruction(uint32_t instr) -> void {
     raw.push_back(instr & 0xff);
     raw.push_back(
@@ -28,9 +28,12 @@ auto binary_data_struct::add_instruction(uint32_t instr) -> void {
 }
 
 auto binary_data_struct::serialize(std::ofstream& binary_file) -> void {
-
     for(const auto e : raw) {
-        binary_file.write(reinterpret_cast<const char*>(&e), e);
+        const uint8_t send = e;
+        binary_file.write(reinterpret_cast<const char*>(&send), send);
     }
+}
+
+auto binary_data_struct::deserialize(std::ifstream& binary_file) -> void {
 
 }

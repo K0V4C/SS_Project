@@ -19,6 +19,7 @@ struct binary_data_struct {
 
 
         auto serialize(std::ofstream& binary_file) -> void;
+        static auto deserialize(std::ifstream& binary_file) -> void;
 };
 
 #endif
