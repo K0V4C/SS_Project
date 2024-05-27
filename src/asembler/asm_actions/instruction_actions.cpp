@@ -892,27 +892,64 @@ auto instruction_ld::execute() -> void {
     switch (op_type)
     {
     case OPERANDS::D_LIT:
-        /* code */
+ 
         break;
     case OPERANDS::D_SYM:
         /* code */
         break;
     case OPERANDS::LIT:
-        /* code */
+  
         break;
     case OPERANDS::SYM:
         /* code */
         break;
     case OPERANDS::REG:
-        /* code */
+        section.binary_data.add_instruction(
+            combine(
+                instruction_ld::op_code,
+                instruction_ld::reg_disp,
+                gpr_d,
+                gpr_s,
+                0,
+                0
+            )
+
+        );
         break;
     case OPERANDS::REG_IND:
-        /* code */
+        section.binary_data.add_instruction(
+            combine(
+                instruction_ld::op_code,
+                instruction_ld::reg_ind_disp,
+                gpr_d,
+                gpr_s,
+                0,
+                0
+            )
+
+        );
         break;
     case OPERANDS::REG_IND_DISP_LIT:
-        /* code */
+        {
+            auto literal = std::get<int32_t>(this->symbol_or_literal);
+            if(abs(literal) > std::pow(2,12)) {
+                throw std::runtime_error("ld instruction literal too big!");
+            }
+
+            section.binary_data.add_instruction(
+                combine(
+                    instruction_ld::op_code,
+                    instruction_ld::reg_ind_disp,
+                    gpr_d,
+                    gpr_s,
+                    0,
+                    literal < 0 ? literal | 0x800 : literal // da li ima potrebe proverava da li je negativno?
+                )
+            );
+        }
         break;
     case OPERANDS::REG_IND_DISP_SYM:
+        // TODO: da li mora backpatching za ovo?
         /* code */
         break;
     default:

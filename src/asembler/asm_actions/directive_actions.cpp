@@ -191,7 +191,18 @@ directive_ascii::directive_ascii(std::string str)
     : ascii_string(str) {}
 
 auto directive_ascii::execute() -> void {
-    // TODO:
+
+    auto& section = Asembler::get_current_section();
+    for(const auto character : ascii_string) {
+        section.binary_data.add_byte(
+            static_cast<char>(character)
+        );
+    }
+
+    section.binary_data.add_byte(
+        static_cast<char>('\0')
+    );
+
 }
 
 directive_ascii::~directive_ascii(){}

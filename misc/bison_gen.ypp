@@ -47,7 +47,7 @@ extern int yylex(void);
 %token<num> DECIMAL_NUM
 %token<num> HEX_NUM
 
-%token STRING
+%token<sym> STRING
 %token END_OF_FILE
 
 %type<num> literal
@@ -807,7 +807,11 @@ skip_directive:
     }
 ;
 ascii_directive:
-    ASCII STRING {/* NOT DONE */}
+    ASCII STRING {
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_ascii>(std::string($2))
+        );
+    }
 ;
 equ_directive:
     EQU symbols {
