@@ -15,7 +15,7 @@
 symbol_struct::symbol_struct
 (      
     uint32_t idx, uint32_t value, int32_t size, SYMBOL_TYPE symbol_type,
-    SYMBOL_BIND symbol_bind, int32_t ndx, std::string symbol_name 
+    SYMBOL_BIND symbol_bind, uint32_t ndx, std::string symbol_name 
 ) : symbol_idx(idx),value(value), size(size), symbol_type(symbol_type),
     symbol_bind(symbol_bind), ndx(ndx), symbol_name(symbol_name){};
 
@@ -36,6 +36,7 @@ std::ostream& operator<<(std::ostream& os, const symbol_struct& obj) {
 
 
 auto symbol_struct::serialize(std::ofstream& binary_file) -> void {
+
     binary_file.write(reinterpret_cast<const char*>(&symbol_idx), sizeof(symbol_idx));
     binary_file.write(reinterpret_cast<const char*>(&value), sizeof(value));
     binary_file.write(reinterpret_cast<const char*>(&size), sizeof(size));

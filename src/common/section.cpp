@@ -62,26 +62,17 @@ auto section_struct::serialize(std::ofstream& binary_file) -> void {
     binary_file.write(reinterpret_cast<const char*>(&section_idx), sizeof(section_idx));
 
     // Put number of relocations
-    const auto num_of_realocs = relocations.size();
+    const uint32_t num_of_realocs = relocations.size();
     binary_file.write(reinterpret_cast<const char*>(&num_of_realocs), sizeof(num_of_realocs));
-
+    
     for(auto e : relocations) {
         e.serialize(binary_file);
     }
 
-    // Now write binary 
-
-    for(int i = 0; i < 60; i++ ) {
-        const auto t = 0xff;
-        binary_file.write(reinterpret_cast<const char*> (&t), sizeof(t));
-    }
-
-    const auto binary_size = binary_data.raw.size();
+    const uint32_t binary_size = binary_data.raw.size();
     binary_file.write(reinterpret_cast<const char*>(&binary_size), sizeof(binary_size));
-
-    std::cout << "binary size: " << binary_size;
+    
     binary_data.serialize(binary_file);
-
 }
 
 auto section_struct::deserialize(std::ifstream& binary_file) -> void {

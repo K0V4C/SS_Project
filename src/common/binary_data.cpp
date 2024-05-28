@@ -30,7 +30,7 @@ auto binary_data_struct::add_instruction(uint32_t instr) -> void {
 auto binary_data_struct::serialize(std::ofstream& binary_file) -> void {
     for(const auto e : raw) {
         const uint8_t send = e;
-        binary_file.write(reinterpret_cast<const char*>(&send), send);
+        binary_file.write(reinterpret_cast<const char*>(&send), sizeof(send));
     }
 }
 

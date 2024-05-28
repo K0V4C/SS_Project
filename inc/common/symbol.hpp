@@ -17,7 +17,7 @@
                             int32_t         size,
                             SYMBOL_TYPE     symbol_type,
                             SYMBOL_BIND     symbol_bind,
-                            int32_t         ndx,
+                            uint32_t         ndx,
                             std::string     symbol_name 
                             ); 
 

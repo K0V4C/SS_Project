@@ -19,7 +19,7 @@ struct section_struct {
     auto add_relocation(uint32_t, RELOCATION_TYPE, std::string, int32_t)->void;
 
     std::string name;
-    int32_t section_idx; 
+    uint32_t section_idx; 
     std::vector<relocation_struct> relocations;
     binary_data_struct binary_data;
 

@@ -48,7 +48,7 @@ auto Asembler::asemble() -> void {
 auto Asembler::serialize(std::string file_name) -> void {
 
     std::ofstream binary_file(file_name, std::ios::out | std::ios::binary);
-    const auto symbol_table_size = symbol_table.size();
+    const uint32_t symbol_table_size = symbol_table.size();
     binary_file.write(reinterpret_cast<const char*>(&symbol_table_size), sizeof(symbol_table_size));
 
     for(auto e : symbol_table) {
@@ -56,9 +56,8 @@ auto Asembler::serialize(std::string file_name) -> void {
         e.second.serialize(binary_file);
     }
 
-    const auto section_table_size = section_table.size() - 1; // -1 for te NULL
-    std::cout <<section_table_size << std::endl;
-    binary_file.write(reinterpret_cast<const char*>(&section_table_size), section_table_size);
+    const uint32_t section_table_size = section_table.size() - 1; // -1 for te NULL
+    binary_file.write(reinterpret_cast<const char*>(&section_table_size), sizeof(section_table_size));
 
     for(auto e : section_table) {
         if(e.second.name == "NULL") continue;

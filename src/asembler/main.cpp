@@ -18,7 +18,7 @@ auto test_parser(std::string file_name) -> void {
     Parser parser(file_name);
     try {
     parser.parse();
-    Parser::display_log();
+    //Parser::display_log();
     } catch(...) {
         Parser::display_log();
     }
