@@ -6,7 +6,7 @@
 
 #include "inc/asembler/asm_actions/instruction_actions.hpp"
 #include "inc/asembler/asembler.hpp"
-
+#include <iostream>
 #include <cmath>
 
 auto combine
@@ -24,20 +24,20 @@ auto combine
 
     uint32_t to_ret = 0;
 
-    uint32_t nibble_little_endian = 0                     |
-                                    ((displ & 0xf))       | 
-                                    ((displ & 0xf0))      |
-                                    ((displ & 0xf00))     ;
+    uint32_t nibble_little_endian = 0                      |
+                                    ((displ & 0xf)  << 8)  | 
+                                    ((displ & 0xf0) << 8)  |
+                                    ((displ & 0xf00)>> 4)  ;
 
+    std::cout <<std::hex <<(int)nibble_little_endian;
+    to_ret =    (op_code & 0xf) << 4                    |
+                (mode & 0xf)                            |
+                (A    & 0xf)    << 12                   |
+                (B    & 0xf)    << 8                    | 
+                (C    & 0xf)    << 20                   |
+                ((nibble_little_endian<<16));
 
-    to_ret =    (op_code & 0xf) << 28               |
-                (mode & 0xf)    << 24               |
-                (A    & 0xf)    << 20               |
-                (B    & 0xf)    << 16               | 
-                (C    & 0xf)    << 12               |
-                (nibble_little_endian & 0xfff);
-
-
+    std::cout << std::hex << (int)to_ret << std::endl;
     return to_ret;
 }
 
