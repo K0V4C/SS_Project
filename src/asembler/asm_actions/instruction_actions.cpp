@@ -27,17 +27,15 @@ auto combine
     uint32_t nibble_little_endian = 0                      |
                                     ((displ & 0xf)  << 8)  | 
                                     ((displ & 0xf0) << 8)  |
-                                    ((displ & 0xf00)>> 4)  ;
+                                    ((displ & 0xf00)>> 8)  ;
 
-    std::cout <<std::hex <<(int)nibble_little_endian;
     to_ret =    (op_code & 0xf) << 4                    |
                 (mode & 0xf)                            |
                 (A    & 0xf)    << 12                   |
                 (B    & 0xf)    << 8                    | 
                 (C    & 0xf)    << 20                   |
-                ((nibble_little_endian<<16));
+                ((nibble_little_endian) << 16)          ;
 
-    std::cout << std::hex << (int)to_ret << std::endl;
     return to_ret;
 }
 
