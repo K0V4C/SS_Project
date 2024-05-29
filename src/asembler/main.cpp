@@ -1,6 +1,6 @@
 #include "../../inc/asembler/parser.hpp"
-#include "inc/asembler/env.hpp"
-#include "inc/asembler/asembler.hpp"
+#include "../../inc/asembler/env.hpp"
+#include "../../inc/asembler/asembler.hpp"
 #include <iostream>
 #include <stdexcept>
 

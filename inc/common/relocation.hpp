@@ -26,7 +26,7 @@ struct relocation_struct {
     friend std::ostream& operator<<(std::ostream& os, const relocation_struct& obj);
 
     auto serialize(std::ofstream& binary_data) -> void;
-    static auto deserialize(std::ifstream& binary_file) -> void;
+    static auto deserialize(std::ifstream& binary_file) -> relocation_struct;
 
 };
 

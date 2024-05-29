@@ -2,11 +2,11 @@
 #define _ASEMBLER_HPP
 
 #include "asm_actions/actions.hpp"
-#include "inc/common/binary_data.hpp"
-#include "inc/common/symbol.hpp"
-#include "inc/common/relocation.hpp"
-#include "inc/common/section.hpp"
-#include "inc/common/types.hpp"
+#include "../common/binary_data.hpp"
+#include "../common/symbol.hpp"
+#include "../common/relocation.hpp"
+#include "../common/section.hpp"
+#include "../common/types.hpp"
 
 #include <cstdint>
 #include <map>

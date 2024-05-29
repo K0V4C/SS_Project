@@ -24,9 +24,9 @@ struct section_struct {
     binary_data_struct binary_data;
 
     friend std::ostream& operator<<(std::ostream& os, const section_struct& obj);
-
+    
     auto serialize(std::ofstream& binary_file) -> void;
-    static auto deserialize(std::ifstream& binary_file) -> void;
+    static auto deserialize(std::ifstream& binary_file) -> section_struct;
 
 };
 

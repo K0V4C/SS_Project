@@ -5,8 +5,8 @@
  *      ============
  */
 
-#include "inc/asembler/asm_actions/directive_actions.hpp"
-#include "inc/asembler/asembler.hpp"
+#include "../../../inc/asembler/asm_actions/directive_actions.hpp"
+#include "../../../inc/asembler/asembler.hpp"
 #include <cstdint>
 #include <stdexcept>
 #include <variant>

@@ -22,13 +22,13 @@ std::map<std::string, symbol_struct> Asembler::symbol_table = std::map<std::stri
  */
 
 Asembler::Asembler() {
-    // Init first entry in symbol_table 
+    // Init first entry in symbol_table
     Asembler::symbol_table["NULL"] = {
         Asembler::next_symbol_idx++,
         0, 0, SYMBOL_TYPE::NOTYP, SYMBOL_BIND::LOCAL, 0, "NULL"
     };
 
-    // Reserve first section 
+    // Reserve first section
     Asembler::section_table["NULL"] = {
         Asembler::next_section_idx++,
         "NULL"
@@ -37,7 +37,7 @@ Asembler::Asembler() {
 }
 
 auto Asembler::asemble() -> void {
-    
+
     auto& all_actions = Asembler::file_actions;
 
     for(auto& action : all_actions ) {
@@ -48,7 +48,7 @@ auto Asembler::asemble() -> void {
 auto Asembler::serialize(std::string file_name) -> void {
 
     std::ofstream binary_file(file_name, std::ios::out | std::ios::binary);
-    const uint32_t symbol_table_size = symbol_table.size();
+    const uint32_t symbol_table_size = symbol_table.size() - 1; // -1 for the NULL
     binary_file.write(reinterpret_cast<const char*>(&symbol_table_size), sizeof(symbol_table_size));
 
     for(auto e : symbol_table) {
@@ -104,7 +104,7 @@ auto Asembler::link_symbol(std::string symbol, uint32_t location) -> void {
 
 std::ostream& operator<<(std::ostream& os, const Asembler::forward_struct& obj) {
 
-     {  
+     {
         os      << std::setw(20)    << obj.symbol_name << "  | ";
 
         auto i = 0;
@@ -123,13 +123,13 @@ std::ostream& operator<<(std::ostream& os, const Asembler::forward_struct& obj) 
 
 auto Asembler::print_forward_table() -> void {
 
-    std::cout << "\n\nForward Table:\n"; 
+    std::cout << "\n\nForward Table:\n";
     {
         std::cout << std::setw(20) << std::left    << "Symbol"        << "  | "
                   << std::setw(85) << std::left    << "Values"         << " | \n";
     }
 
-    
+
     {
         for(auto& e : Asembler::forward_table) {
             std::cout << e.second << std::endl;
@@ -144,7 +144,7 @@ Asembler::forward_struct::~forward_struct(){}
 
 /*
  *
- *      SECTION TABLE 
+ *      SECTION TABLE
  *
  *
  *
@@ -168,14 +168,14 @@ auto Asembler::get_current_section() -> section_struct& {
 
 
 auto Asembler::print_section_table() -> void {
-    
-    std::cout << "\n\nSection Table:\n"; 
+
+    std::cout << "\n\nSection Table:\n";
     {
         std::cout << std::setw(40) << std::left    << "section name"        << " | "
                   << std::setw(20) << std::left    << "section idx "        << " | "
                   << std::setw(43) << std::left    << "Rel Under Section"   << " |\n";
     }
-    
+
     {
         for(auto& e : Asembler::section_table) {
             std::cout << e.second << std::endl;
@@ -192,7 +192,7 @@ auto Asembler::print_section_table() -> void {
 uint32_t Asembler::next_symbol_idx = 0;
 
 auto Asembler::print_symbol_table() -> void {
-    
+
     std::cout << "Symbol table:\n";
 
     {

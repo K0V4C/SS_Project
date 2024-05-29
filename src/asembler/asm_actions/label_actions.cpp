@@ -4,8 +4,8 @@
  *      =======
  */
 
-#include "inc/asembler/asm_actions/label_actions.hpp"
-#include "inc/asembler/asembler.hpp"
+#include "../../../inc/asembler/asm_actions/label_actions.hpp"
+#include "../../../inc/asembler/asembler.hpp"
 #include <stdexcept>
 
 label::label(std::string name) : symbol_name(name){}

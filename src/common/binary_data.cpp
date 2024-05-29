@@ -1,4 +1,4 @@
-#include "inc/common/binary_data.hpp"
+#include "../../inc/common/binary_data.hpp"
 #include <iostream>
 /*
  *
@@ -17,7 +17,7 @@ auto binary_data_struct::add_byte(uint8_t byte) -> void{
 auto binary_data_struct::add_instruction(uint32_t instr) -> void {
     raw.push_back(instr & 0xff);
     raw.push_back(
-            (instr & 0xff00) >> 8 
+            (instr & 0xff00) >> 8
     );
     raw.push_back (
             (instr & 0xff0000) >> 16
@@ -34,6 +34,14 @@ auto binary_data_struct::serialize(std::ofstream& binary_file) -> void {
     }
 }
 
-auto binary_data_struct::deserialize(std::ifstream& binary_file) -> void {
+auto binary_data_struct::deserialize(std::ifstream& binary_file, uint32_t binary_size) -> binary_data_struct {
 
+    binary_data_struct _new_bds;
+
+    for(int i = 0; i < binary_size; i++) {
+        uint8_t new_data;
+        binary_file.read(reinterpret_cast<char*>(&new_data), sizeof(new_data));
+        _new_bds.add_byte(new_data);
+    }
+    return _new_bds;
 }

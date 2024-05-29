@@ -1,4 +1,4 @@
-#include "inc/common/relocation.hpp"
+#include "../../inc/common/relocation.hpp"
 #include <iomanip>
 
 /*
@@ -40,6 +40,17 @@ auto relocation_struct::serialize(std::ofstream& binary_file) -> void {
 
 }
 
-auto relocation_struct::deserialize(std::ifstream& binary_file) -> void {
+auto relocation_struct::deserialize(std::ifstream& binary_file) -> relocation_struct {
 
+    uint32_t        _offset;
+    RELOCATION_TYPE _type;
+    std::string     _symbol_name;
+    int32_t         _addened;
+
+    binary_file.read(reinterpret_cast<char*>(&_offset), sizeof(_offset));
+    binary_file.read(reinterpret_cast<char*>(&_type), sizeof(_type));
+    std::getline(binary_file, _symbol_name, '\0');
+    binary_file.read(reinterpret_cast<char*>(&_addened), sizeof(_addened));
+
+    return {_offset, _type, _symbol_name, _addened};
 }
