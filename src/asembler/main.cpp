@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 auto test_command_line_args(env& obj) -> void {
-     
+
     auto args = obj.get();
 
     for(auto& a : args) {
@@ -30,13 +30,20 @@ auto test_parser(std::string file_name) -> void {
 auto main(int argc, char** argv) -> int {
     env env_obj(argc, argv);
     test_parser(env_obj.input_file());
-    
-    try {
+
     Asembler asm_control;
+
+    try {
     asm_control.asemble();
     } catch (std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
-    } 
+    }
+
+    try{
+        asm_control.backpatch();
+    } catch (std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
 
     Asembler::print_section_table();
     Asembler::print_symbol_table();

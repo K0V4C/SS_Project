@@ -20,12 +20,19 @@ public:
     Asembler();
 
     auto asemble() -> void;
+    auto backpatch() -> void;
+
+    auto symbol_exists(std::string) -> bool;
+    auto get_symbol(std::string) -> symbol_struct;
+
+    auto section_exists(uint32_t) -> bool;
+    auto get_section(uint32_t) -> section_struct;
 
     ~Asembler();
 
     // Used to do instructions and also directives
     static std::vector<std::unique_ptr<action>> file_actions;
-    
+
 
     static std::map<std::string, symbol_struct> symbol_table;
     static uint32_t next_symbol_idx;
@@ -36,7 +43,7 @@ public:
     //
     //  FORWARD TABLE
     //
-    // 
+    //
 
     struct forward_struct {
 
@@ -44,7 +51,7 @@ public:
         ~forward_struct();
 
         std::string symbol_name;
-        
+
         std::vector<uint32_t> locations;
 
         friend std::ostream& operator<<(std::ostream& os, const forward_struct& obj);

@@ -1,8 +1,6 @@
 #include "../../inc/linker/linker.hpp"
 #include "../../inc/linker/env.hpp"
 
-#include <iostream>
-
 auto main(int argc,char** argv) -> int {
 
     env env_obj(argc, argv);

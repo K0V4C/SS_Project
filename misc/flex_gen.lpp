@@ -83,7 +83,7 @@ csrwr       {std::string new_token("CSRRW"); Parser::log_token(new_token); retur
 
 "+"         {std::string new_token("PLUS"); Parser::log_token(new_token); return PLUS;}
 "-"         {std::string new_token("MINUS"); Parser::log_token(new_token); return MINUS;}
-"*"         {std::string new_token("MULTIPLY"); Parser::log_token(new_token); return MULTIPLY;}
+"*"        std::string(argv[i]).substr(pos+1) {std::string new_token("MULTIPLY"); Parser::log_token(new_token); return MULTIPLY;}
 "/"         {std::string new_token("DIVISON"); Parser::log_token(new_token); return DIVISION;}
 "["         {std::string new_token("LEFT_BRACKET"); Parser::log_token(new_token); return LEFT_BRACKET;}
 "]"         {std::string new_token("RIGHT_BRACKET"); Parser::log_token(new_token); return RIGHT_BRACKET;}

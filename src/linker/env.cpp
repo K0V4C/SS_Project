@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <stdexcept>
 /*
 
         STATIC INITIALIZATION
@@ -31,18 +32,20 @@ env::env(int32_t argc, char** argv) {
             continue;
         }
 
-
-        // TODO: test this
         if(std::string(argv[i]).substr(0,6) == std::string("-place")) {
 
             auto pos = std::string(argv[i]).find("@");
             auto section = std::string(argv[i]).substr(7,pos - 7);
 
-            auto number  = std::stoi(
-                std::string(argv[i]).substr(pos+1)
+            uint32_t number  = std::stol(
+                std::string(argv[i]).substr(pos+1), 0, 16
             );
+            
 
-            std::cout << "PLACE  " << section << "   " << number;
+            auto it = places.find(section);
+            if(it != places.end()) {
+                throw std::runtime_error(" Can't asign mutiple places for 1 section");
+            }
 
             places[section] = number;
             continue;
