@@ -151,12 +151,20 @@ auto Linker::resolve_symbols(std::string file_name) -> void {
             continue; // Ignore local symbols
         }
         
+        
         if(symbol_exists(symbol.symbol_name)) {
-            
-            if(symbol.symbol_type == SYMBOL_TYPE::NOTYP and symbol.ndx != 0)
-                throw std::runtime_error("Linker phase 2 : symbol already defined");
-        }
-
+             
+             if(symbol.symbol_bind == SYMBOL_BIND::EXTERN) {
+                 continue;
+             }
+             
+             if( (symbol.symbol_bind == SYMBOL_BIND::GLOBAL and symbol_table[symbol.symbol_name].symbol_bind == SYMBOL_BIND::GLOBAL)) {
+                 throw std::runtime_error("Linker phase 2 : symbol already defined");
+             }
+                 
+             std::cerr << "WARNING\n";
+         }
+        
         symbol_table[symbol.symbol_name] = {
             Linker::next_symbol_idx++,
             symbol.value,
@@ -177,6 +185,7 @@ auto Linker::get_symbol_value(std::string symbol_name) -> uint32_t {
     if(it == symbol_table.end()) {
         throw std::runtime_error("Linker phase 3 :  relocation symbol not found");
     }
+    
     
     if(symbol_table[symbol_name].ndx == 0) {
         throw std::runtime_error("Linker phase 3 : symbol undefined");
@@ -223,6 +232,8 @@ auto Linker::resolve_everything() -> void {
         for(auto& symbol_pair : symbol_table){
             auto& symbol = symbol_pair.second;
             if(symbol.symbol_name == "NULL") continue;
+            if(symbol.ndx != section.section_idx) continue;
+            
             symbol.value += binary_size;
         }
         
@@ -264,6 +275,8 @@ auto Linker::resolve_everything() -> void {
     // Resolve relocations
 
      for(auto& section : section_table) {
+         
+         if(section.second.name == "NULL") continue;
 
          uint32_t resolved = 0;
          

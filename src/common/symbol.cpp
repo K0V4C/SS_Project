@@ -24,7 +24,7 @@ std::ostream& operator<<(std::ostream& os, const symbol_struct& obj) {
 
     {
         os          << std::setw(5)     << std::left << obj.symbol_idx                          << " | "
-                    << std::setw(20)    << std::left << obj.value                               << " | "
+                    << std::setw(20)    << std::left << std::hex << static_cast<uint32_t>(obj.value) << " | "
                     << std::setw(5)     << std::left << obj.size                                << " | "
                     << std::setw(10)    << std::left << symbol_type_2_string(obj.symbol_type)   << " | "
                     << std::setw(10)    << std::left << symbol_bind_2_string(obj.symbol_bind)   << " | "
