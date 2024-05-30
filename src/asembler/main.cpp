@@ -18,7 +18,7 @@ auto test_parser(std::string file_name) -> void {
     Parser parser(file_name);
     try {
     parser.parse();
-    //Parser::display_log();
+    // Parser::display_log();
     } catch(...) {
         Parser::display_log();
     }
@@ -45,9 +45,9 @@ auto main(int argc, char** argv) -> int {
         std::cerr << e.what() << std::endl;
     }
 
-    Asembler::print_section_table();
-    Asembler::print_symbol_table();
-    Asembler::print_forward_table();
+    // Asembler::print_section_table();
+    // Asembler::print_symbol_table();
+    // Asembler::print_forward_table();
 
     Asembler::serialize(env_obj.output_file());
 

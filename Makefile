@@ -19,13 +19,13 @@ bison_gen.tab.cpp bison_gen.tab.hpp: $(BISON_FILE)
 lex.yy.c: $(FLEX_FILE) bison_gen.tab.hpp
 	$(LEXER) $(FLEX_FILE)
 
-asembler: bison_gen.tab.cpp bison_gen.tab.hpp lex.yy.c
-	$(CC) $(CFLAGS) $(ASM_FLAGS) $(ASM_SOURCES) -o asembler.out
+asembler_build: bison_gen.tab.cpp bison_gen.tab.hpp lex.yy.c
+	$(CC) $(CFLAGS) $(ASM_FLAGS) $(ASM_SOURCES) -o "asembler"
 
-linker:
-	$(CC) $(CFLAGS) $(LINKER_FLAGS) $(LINKER_SOURCES) -o linker.out
+linker_build:
+	$(CC) $(CFLAGS) $(LINKER_FLAGS) $(LINKER_SOURCES) -o "linker"
 
-all: linker asembler
+all: linker_build asembler_build
 	@echo "Project built!"
 
 

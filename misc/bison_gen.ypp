@@ -71,6 +71,8 @@ label:
         Asembler::file_actions.push_back(
             std::make_unique<label>(std::get<std::string>(sol))
         );
+        
+         c.clear_symbols_and_literals();
     }
 ;
 
@@ -502,8 +504,10 @@ ld_instruction:
         auto gpr_regs = c.get_gpr_list();
 
         auto sol = c.get_symbols_and_literals()[0];
-
+        
         if(std::holds_alternative<std::string>(sol)) {
+        
+            std::cout << std::get<std::string>(sol);
             Asembler::file_actions.push_back(
                 std::make_unique<instruction_ld>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_SYM)
             );

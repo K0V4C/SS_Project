@@ -1307,6 +1307,9 @@ auto instruction_st::execute() -> void {
         {
             auto _symbol = std::get<std::string>(symbol_or_literal);
             auto it = Asembler::symbol_table.find(_symbol);
+            
+            std::cout << _symbol;
+            exit(0);
 
             // There is only one case when we can leave displacement for symbol
             // That is is if is defined, in the same section and < 2^12

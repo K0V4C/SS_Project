@@ -150,9 +150,11 @@ auto Linker::resolve_symbols(std::string file_name) -> void {
         if(symbol.symbol_bind == SYMBOL_BIND::LOCAL) {
             continue; // Ignore local symbols
         }
-
+        
         if(symbol_exists(symbol.symbol_name)) {
-            throw std::runtime_error("Linker phase 2 : symbol already defined");
+            
+            if(symbol.symbol_type == SYMBOL_TYPE::NOTYP and symbol.ndx != 0)
+                throw std::runtime_error("Linker phase 2 : symbol already defined");
         }
 
         symbol_table[symbol.symbol_name] = {
@@ -174,6 +176,10 @@ auto Linker::get_symbol_value(std::string symbol_name) -> uint32_t {
 
     if(it == symbol_table.end()) {
         throw std::runtime_error("Linker phase 3 :  relocation symbol not found");
+    }
+    
+    if(symbol_table[symbol_name].ndx == 0) {
+        throw std::runtime_error("Linker phase 3 : symbol undefined");
     }
 
     return symbol_table[symbol_name].value;
