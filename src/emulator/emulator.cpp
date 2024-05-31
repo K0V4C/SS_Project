@@ -106,9 +106,9 @@ auto Emulator::read_instruction() -> uint32_t {
 
 auto Emulator::read_memory(uint32_t addr) -> uint32_t{
     uint32_t insturction_raw = memory[addr]                 ;
-    insturction_raw = (insturction_raw << 8 ) | memory[addr];
-    insturction_raw = (insturction_raw << 8 ) | memory[addr];
-    insturction_raw = (insturction_raw << 8 ) | memory[addr];
+    insturction_raw = (insturction_raw << 8 ) | memory[addr + 1];
+    insturction_raw = (insturction_raw << 8 ) | memory[addr + 2];
+    insturction_raw = (insturction_raw << 8 ) | memory[addr + 3];
     
     return insturction_raw;
 }
