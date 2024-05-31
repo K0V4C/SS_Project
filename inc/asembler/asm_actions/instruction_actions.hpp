@@ -282,7 +282,7 @@ struct instruction_xchg : public action {
 
     virtual ~instruction_xchg();
 
-    static constexpr uint8_t op_code = 0b1000;
+    static constexpr uint8_t op_code = 0b0100;
     static constexpr uint8_t mode    = 0b0000;
 
 private:
@@ -527,7 +527,7 @@ private:
 
 //
 //
-//      INSTRUCTION CSRRW
+//      INSTRUCTION CSRWR
 //
 //
 
@@ -598,7 +598,7 @@ struct instruction_st : public action {
 
     virtual ~instruction_st();
 
-    static uint8_t constexpr op_code    = 0b1001;
+    static uint8_t constexpr op_code    = 0b1000; // check if its good
     static uint8_t constexpr mem_gpr    = 0b0000;
     static uint8_t constexpr mem_mem_gpr= 0b0010;
 

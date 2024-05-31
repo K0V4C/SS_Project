@@ -1,7 +1,6 @@
 #include "../../inc/emulator/emulator.hpp"
 #include <stdexcept>
-
-
+#include <iostream>
 auto main(int argc, char** argv) -> int {
     
     if(argc < 2) {
@@ -9,7 +8,8 @@ auto main(int argc, char** argv) -> int {
     }
     
     Emulator emu(argv[1]);
-    
+    emu.load_data();
+    emu.run();
     
     
     return 0;

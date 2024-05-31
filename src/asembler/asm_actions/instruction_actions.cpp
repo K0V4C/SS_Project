@@ -927,7 +927,7 @@ auto instruction_ld::execute() -> void {
             section.binary_data.add_instruction (
                 combine(
                     instruction_ld::op_code,
-                    instruction_ld::reg_disp, 
+                    instruction_ld::reg_ind_disp, 
                     gpr_d,
                     static_cast<uint8_t>(REGISTERS::PC),
                     0,

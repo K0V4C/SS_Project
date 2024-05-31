@@ -190,6 +190,7 @@ auto Linker::get_symbol_value(std::string symbol_name) -> uint32_t {
     if(symbol_table[symbol_name].ndx == 0) {
         throw std::runtime_error("Linker phase 3 : symbol undefined");
     }
+    
 
     return symbol_table[symbol_name].value;
 }
@@ -283,20 +284,24 @@ auto Linker::resolve_everything() -> void {
          uint32_t section_offset = get_symbol_value(section.second.name);
 
          for(auto& relocation : section.second.relocations) {
+             
+             // std::cout  << relocation.symbol_name << " : " 
+             //            << "fixing address : " << std::hex << relocation.offset
+             //            << "  wtih : "
+             //            << std::hex <<  get_symbol_value(relocation.symbol_name) 
+             //            << " + " << std::hex <<  relocation.addend << std::endl;
+                        
+             uint32_t relocated_value = get_symbol_value(relocation.symbol_name) + relocation.addend;
                 
-             whole_file[relocation.offset + section_offset] = whole_file[
-                    get_symbol_value(relocation.symbol_name) + relocation.addend
-                 ];
-             whole_file[relocation.offset + section_offset + 1] = whole_file[
-                    get_symbol_value(relocation.symbol_name) + relocation.addend + 1
-                ];
-             whole_file[relocation.offset + section_offset + 2] = whole_file[
-                    get_symbol_value(relocation.symbol_name) + relocation.addend + 2
-                ];
-             whole_file[relocation.offset + section_offset + 3] = whole_file[
-                    get_symbol_value(relocation.symbol_name) + relocation.addend + 3
-                ];
-
+             whole_file[relocation.offset + section_offset    ] = (relocated_value & 0xff000000) >> 24;
+             whole_file[relocation.offset + section_offset + 1] = (relocated_value & 0x00ff0000) >> 16;
+             whole_file[relocation.offset + section_offset + 2] = (relocated_value & 0x0000ff00) >>  8;
+             whole_file[relocation.offset + section_offset + 3] = (relocated_value & 0x000000ff) >>  0;
+             
+             // std::cout  << std::endl << std::hex << (int) whole_file[0x4000000c] << " "
+             //            << std::hex << (int)whole_file[0x4000000c + 1] << " "
+             //            << std::hex << (int) whole_file[0x4000000c + 2] << " "
+             //            << std::hex << (int) whole_file[0x4000000c + 3] << " "    << std::endl;
              resolved += 1;
          }
 
