@@ -905,4 +905,14 @@ auto Emulator::print_registers() -> void {
         }
         std::cout << std::endl;
     }
+    
+#if debug
+    std::cout << std::endl;
+    
+    std::cout << std::setw(10) << std::setfill(' ') << "status = 0x" << std::setw(8) << std::hex << std::setfill('0') << read_csr(status) << std::endl; 
+    std::cout << std::setw(10) << std::setfill(' ') << "handler = 0x" << std::setw(8) << std::hex << std::setfill('0') << read_csr(handler) << std::endl;
+    std::cout << std::setw(10) << std::setfill(' ') << "cause = 0x" << std::setw(8) << std::hex << std::setfill('0') << read_csr(cause) << std::endl;
+    
+    std::cout << std::endl;
+#endif
 }
