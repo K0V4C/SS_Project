@@ -45,9 +45,11 @@ auto main(int argc, char** argv) -> int {
         std::cerr << e.what() << std::endl;
     }
 
-    // Asembler::print_section_table();
-    // Asembler::print_symbol_table();
-    // Asembler::print_forward_table();
+#ifdef DEBUG
+    Asembler::print_section_table();
+    Asembler::print_symbol_table();
+    Asembler::print_forward_table();
+#endif
 
     Asembler::serialize(env_obj.output_file());
 

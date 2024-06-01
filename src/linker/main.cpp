@@ -22,7 +22,9 @@ auto main(int argc,char** argv) -> int {
     // After that resolves relocations and symbols coralated with those sections
     linker.resolve_files();
 
+#ifdef DEBUG
     linker.print_linker_tables();
+#endif
 
     // Now the output file
     // If hex was set with evv_bj linker has to solve all relocations and after that

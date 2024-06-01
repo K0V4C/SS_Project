@@ -127,12 +127,13 @@ auto instruction_iret::execute() -> void {
 
     section.binary_data.add_instruction(
         combine(
+  
                 instruction_iret::op_code,
                 instruction_iret::pop_pc,
                 static_cast<uint8_t>(REGISTERS::PC),
                 static_cast<uint8_t>(REGISTERS::SP),
                 0,
-                -4
+                4
             )
     );
 
@@ -143,7 +144,7 @@ auto instruction_iret::execute() -> void {
                 static_cast<uint8_t>(REGISTERS::STATUS),
                 static_cast<uint8_t>(REGISTERS::SP),
                 0,
-                -4
+                4
             )
     );
 }
@@ -160,8 +161,6 @@ instruction_call::instruction_call(std::variant<std::string, int32_t> operand)
     : operand(operand){}
 
 auto instruction_call::execute() -> void {
-
-    std::cout << "ovde smo" << std::endl;return;
 
     auto& section = Asembler::get_current_section();
 
@@ -237,9 +236,9 @@ auto instruction_call::execute() -> void {
 
         return;
     }
-
-
+    
     // Symbol not defined, we have to leave reloaciton data
+    
 
     section.binary_data.add_instruction (
         combine(
@@ -252,6 +251,7 @@ auto instruction_call::execute() -> void {
         )
     );
 
+
     add_leap();
     section.add_relocation(
         Asembler::get_section_counter(),
@@ -260,6 +260,8 @@ auto instruction_call::execute() -> void {
         0
     );
     reserve_4B(0);
+    
+
     return;
 }
 
@@ -285,7 +287,7 @@ auto instruction_ret::execute() -> void {
                 static_cast<uint8_t>(REGISTERS::PC),
                 static_cast<uint8_t>(REGISTERS::SP),
                 0,
-                -4
+                4
             )
     );
 
@@ -485,7 +487,7 @@ auto instruction_push::execute() -> void {
                 static_cast<uint8_t>(REGISTERS::SP),
                 0,
                 reg,
-                4
+                -4
             )
     );
 
@@ -513,7 +515,7 @@ auto instruction_pop::execute() -> void {
                 reg,
                 static_cast<uint8_t>(REGISTERS::SP),
                 0,
-                -4
+                4
             )
     );
 
@@ -836,9 +838,9 @@ auto instruction_csrrd::execute() -> void {
         combine(
                 instruction_csrrd::op_code,
                 instruction_csrrd::mode,
-                static_cast<uint8_t>(csr),
-                static_cast<uint8_t>(csr),
                 gpr_d,
+                static_cast<uint8_t>(csr),
+                static_cast<uint8_t>(csr),
                 0
             )
     );
@@ -861,9 +863,9 @@ auto instruction_csrwr::execute() -> void {
         combine(
                 instruction_csrwr::op_code,
                 instruction_csrwr::mode,
-                gpr_s,
-                gpr_s,
                 static_cast<uint8_t>(csr),
+                gpr_s,
+                gpr_s,
                 0
             )
     );

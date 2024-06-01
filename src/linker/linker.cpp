@@ -205,10 +205,19 @@ auto Linker::resolve_everything() -> void {
     
     std::vector<std::string> placed_sections;
     
+    // Covenrt map of string : where into 
+    
+    std::map<uint32_t, std::string> reverse_it;
+    
     for(auto& place : places) {
+        reverse_it[place.second] = place.first;
+    }
+    
+    
+    for(auto& place : reverse_it) {
         
-        std::string section_name = place.first;
-        uint32_t            addr = place.second;
+        uint32_t            addr = place.first;
+        std::string section_name = place.second;
         
         if(whole_file.find(addr) != whole_file.end()) {
             throw std::runtime_error(" place options overlap!");
@@ -235,6 +244,8 @@ auto Linker::resolve_everything() -> void {
             if(symbol.symbol_name == "NULL") continue;
             if(symbol.ndx != section.section_idx) continue;
             
+            // TODO; potencial bug, because of section symbol
+            
             symbol.value += binary_size;
         }
         
@@ -243,6 +254,7 @@ auto Linker::resolve_everything() -> void {
     
 
     // Set addres for the last jumbled up section
+
     for(auto& section : section_table) {
 
         // Jump over null and already places sections
@@ -253,6 +265,10 @@ auto Linker::resolve_everything() -> void {
         }
         
         auto& raw = section.second.binary_data.raw;
+
+#ifdef DEBUG
+        std::cout << "section :" << section.second.name << " @0x" << std::setw(8) << std::setfill('0') << std::hex << (int)binary_size << std::endl;  
+#endif
 
         // Concat into singular file
         for(int i = 0; i < raw.size(); i++) {
@@ -266,7 +282,13 @@ auto Linker::resolve_everything() -> void {
             
             if(symbol.symbol_name == "NULL") continue;
             if(symbol.ndx != section.second.section_idx) continue;
-
+            
+            
+#ifdef DEBUG 
+            std::cout   << "from section: " << section.second.name << " symbol : " << symbol.symbol_name << " has value before and after : "
+                        << (int)symbol.value << " | "<<  (int)symbol.value  << std::endl;
+#endif
+            
             symbol.value += binary_size;
         }
 

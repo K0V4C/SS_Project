@@ -33,8 +33,17 @@ emulator_build:
 all: emulator_build linker_build asembler_build
 	@echo "Project built!"
 
+asembler_debug: bison_gen.tab.cpp bison_gen.tab.hpp lex.yy.c
+	$(CC) $(CFLAGS) $(ASM_FLAGS) $(ASM_SOURCES) -o "assembler" -DDEBUG
 
+linker_debug:
+	$(CC) $(CFLAGS) $(LINKER_FLAGS) $(LINKER_SOURCES) -o "linker" -DDEBUG
 
+emulator_debug:
+	$(CC) $(CFLAGS) $(EMULATOR_FLAGS) $(EMULATOR_SOURCES) -o "emulator" -DDEBUG
+
+debug: emulator_debug linker_debug asembler_debug
+	@echo "Debug buildt"
 
 clean:
 	rm -f linker

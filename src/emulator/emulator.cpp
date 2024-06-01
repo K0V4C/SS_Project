@@ -1,6 +1,9 @@
 #include "../../inc/emulator/instruction.hpp"
 #include "../../inc/emulator/emulator.hpp"
+#include "../../inc/emulator/external.hpp"
 
+
+#include <exception>
 #include <iomanip>
 #include <cstdint>
 #include <fstream>
@@ -8,8 +11,7 @@
 #include <array>
 #include <stdexcept>
 #include <string>
-
-#define debug  1
+#include <thread>
 
 // Static data
 //
@@ -25,6 +27,8 @@ Emulator::Emulator(std::string file_name)
 
         gpr[pc] = 0x40000000;
         gpr[sp] = 0x0;
+        
+        interrupt_register = 0;
         
         // memory mapped registers
         for(uint32_t i = 0xffffff00; i < 0xffffffff; i++) {
@@ -61,34 +65,49 @@ auto Emulator::load_data() -> void {
 
 auto Emulator::run() -> void {
 
+    std::thread terminal_thread(terminal_thread_body, this);
+    std::thread timer_thread(timer_thread_body, this);
+    
     try {
-
         while(running) {
-            std::cout << std::hex << (int)read_register(pc) << std::endl;
             
+#ifdef DEBUG
+            std::cout << std::hex << (int)read_register(pc) << std::endl;
             std::cout <<std::endl;print_registers();std::cout<<std::endl;
+#endif
+
             execute_instruction(
                 read_instruction()
             );
-            // check for interrupts
+            
+            check_interrupts();
         }
     } catch (std::runtime_error& e){
         std::cout   << "Emulated processor halted\n"
                     <<  e.what() << std::endl;
     }
+    
 
     std::cout << "Emulated procesor state\n";
 
     print_registers();
-
+    
+    die = true;
+    
+    terminal_thread.join();
+    timer_thread.join();
+    
 }
 
 
 auto Emulator::write_memory(uint32_t addr, uint32_t data) -> void {
+    
     memory[addr]     = (data & 0xff000000) >> 24;
     memory[addr + 1] = (data & 0x00ff0000) >> 16;
     memory[addr + 2] = (data & 0x0000ff00) >> 8;
     memory[addr + 3] = (data & 0x000000ff) >> 0;
+    
+    _terminal.write_val(data);
 }
 auto Emulator::read_instruction() -> uint32_t {
     
@@ -159,7 +178,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_int: {
 
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  INT INSTRUCION" 
@@ -169,7 +188,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
                         << "  displacement = " << std::hex << (int)D
                         << std::endl;
 #endif
-
+    
             interrupt_register |= Emulator::soft;
 
             return;
@@ -177,7 +196,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_call_12b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  CALL 12b INSTRUCION" 
@@ -207,7 +226,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_call_32b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  CALL 32b INSTRUCION" 
@@ -237,7 +256,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_jmp_12b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  JMP 12b INSTRUCION" 
@@ -257,7 +276,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_jmp_32b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  JMP 32b INSTRUCION" 
@@ -277,7 +296,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_beq_12b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  BEQ 12b INSTRUCION" 
@@ -299,7 +318,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_beq_32b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  BEQ 32b INSTRUCION" 
@@ -321,7 +340,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_bne_12b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  BNE 32b INSTRUCION" 
@@ -343,7 +362,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_bne_32b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  BNE 32b INSTRUCION" 
@@ -365,7 +384,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_bgt_12b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  BGT 12b INSTRUCION" 
@@ -387,7 +406,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_bgt_32b: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  BGT 32b INSTRUCION" 
@@ -410,7 +429,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_push: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  PUSH INSTRUCION" 
@@ -434,7 +453,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_pop: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  POP INSTRUCION" 
@@ -458,7 +477,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_pop_csr: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  POP CSR INSTRUCION  " 
@@ -482,7 +501,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_xchg: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  XCHG INSTRUCION" 
@@ -502,7 +521,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_add: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  ADD INSTRUCION" 
@@ -522,7 +541,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_sub: {
 
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  SUB INSTRUCION" 
@@ -542,7 +561,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_mul: {
     
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  MUL INSTRUCION" 
@@ -562,7 +581,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_div: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  DIV INSTRUCION" 
@@ -582,7 +601,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_not: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  NOT INSTRUCION" 
@@ -602,7 +621,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_and: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  AND INSTRUCION" 
@@ -622,7 +641,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_or: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  OR INSTRUCION" 
@@ -642,7 +661,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_xor: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  XOR INSTRUCION" 
@@ -662,7 +681,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
         case instruction_type::_shl: {
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  SHL INSTRUCION" 
@@ -683,7 +702,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
         case instruction_type::_shr: {
             
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  SHR INSTRUCION" 
@@ -704,7 +723,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
         case instruction_type::_csrrd: {
             
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  CSRRD INSTRUCION" 
@@ -725,7 +744,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
         case instruction_type::_csrwr: {
             
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  CSRWR INSTRUCION" 
@@ -745,7 +764,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
         case instruction_type::_ld_12b: {
             
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  LD 12b INSTRUCION" 
@@ -766,7 +785,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
         case instruction_type::_ld_32b: {
             
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  LD 32b INSTRUCION" 
@@ -787,7 +806,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
         case instruction_type::_st_12b: {
             
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  ST 12b INSTRUCION" 
@@ -809,7 +828,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
         case instruction_type::_st_32b: {
             
             
-#if debug      
+#ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
                         << "  ST 32b INSTRUCION" 
@@ -896,6 +915,14 @@ auto Emulator::check_interrupts() -> void {
 
 }
 
+auto Emulator::read_tim_cfg() -> uint32_t {
+    return read_memory(0xffffff10);
+}
+
+auto Emulator::write_term_in(uint32_t data) -> void {
+    write_memory(0xffffff04, data);
+}
+
 auto Emulator::print_registers() -> void {
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
@@ -906,13 +933,12 @@ auto Emulator::print_registers() -> void {
         std::cout << std::endl;
     }
     
-#if debug
+#ifdef DEBUG
     std::cout << std::endl;
-    
+    std::cout << std::setw(10) << std::setfill(' ') << "irq = 0x" << std::setw(8) << std::hex << std::setfill('0') << interrupt_register << std::endl; 
     std::cout << std::setw(10) << std::setfill(' ') << "status = 0x" << std::setw(8) << std::hex << std::setfill('0') << read_csr(status) << std::endl; 
     std::cout << std::setw(10) << std::setfill(' ') << "handler = 0x" << std::setw(8) << std::hex << std::setfill('0') << read_csr(handler) << std::endl;
     std::cout << std::setw(10) << std::setfill(' ') << "cause = 0x" << std::setw(8) << std::hex << std::setfill('0') << read_csr(cause) << std::endl;
-    
     std::cout << std::endl;
 #endif
 }

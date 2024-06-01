@@ -181,9 +181,9 @@ call_instruction:
         auto& c = Collector::get_instance();
         auto new_element = c.get_symbols_and_literals()[0];
 
-        /*Asembler::file_actions.push_back(
+        Asembler::file_actions.push_back(
             std::make_unique<instruction_call>(new_element)
-        );*/
+        );
 
         c.clear_symbols_and_literals();
     }
