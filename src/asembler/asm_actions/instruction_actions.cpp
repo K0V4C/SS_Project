@@ -54,10 +54,16 @@ auto add_leap() -> void {
     );
 }
 
-auto reserve_4B(uint32_t instr) -> void {
+auto reserve_4B(uint32_t literal) -> void {
 
     auto& section = Asembler::get_current_section();
-    section.binary_data.add_instruction(instr);
+    
+    uint32_t flip = (literal & 0xff)        << 24    |
+                    (literal & 0xff00)      << 8     |
+                    (literal & 0xff0000)    >> 8     |
+                    (literal & 0xff000000)  >> 24    ;
+                
+    section.binary_data.add_instruction(flip);
     
 }
 
@@ -230,7 +236,7 @@ auto instruction_call::execute() -> void {
                 static_cast<uint8_t>(REGISTERS::PC),
                 gpr_b,
                 gpr_c,
-                (Asembler::symbol_table[_symbol].value - Asembler::get_section_counter()) | 0x8000 // should always be negative?
+                (Asembler::symbol_table[_symbol].value - Asembler::get_section_counter() - 4) | 0x8000 // should always be negative?
             )
         );
 
@@ -372,7 +378,7 @@ auto branch::execute_branch(uint8_t branch_displ, uint8_t branch_not_displ) -> v
                 static_cast<uint8_t>(REGISTERS::PC),
                 gpr_b,
                 gpr_c,
-                (Asembler::symbol_table[_symbol].value - Asembler::get_section_counter()) | 0x8000 // should always be negative?
+                (Asembler::symbol_table[_symbol].value - Asembler::get_section_counter() - 4) | 0x8000 // should always be negative?
             )
         );
 
@@ -906,8 +912,8 @@ auto instruction_ld::execute() -> void {
                 ) {    
 
                 // SYMBOL EXISTS AND IS DEFINED
-
-                auto disp = Asembler::symbol_table[_symbol].value - Asembler::get_section_counter();
+                // TODO: check if good
+                auto disp = Asembler::symbol_table[_symbol].value - Asembler::get_section_counter() - 4;
 
                 section.binary_data.add_instruction (
                     combine(
@@ -1199,15 +1205,15 @@ auto instruction_st::execute() -> void {
             }
 
             // We have to add 2 isntruction becouse we dont have mem[mem[]]
-
-            instruction_ld get_my_literal = {
-                std::variant<std::string, int32_t>(literal),
-                0,
-                gpr_d,
-                OPERANDS::D_LIT
-            };
-
-            get_my_literal.execute();
+            // PREETY SURE THIS HAS TO BE DELETED
+            // instruction_ld get_my_literal = {
+            //     std::variant<std::string, int32_t>(literal),
+            //     0,
+            //     gpr_d,
+            //     OPERANDS::D_LIT
+            // };
+            // get_my_literal.execute();
+    
 
             // Literal value is inside reg_d now (at least should be)
 

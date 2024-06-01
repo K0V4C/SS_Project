@@ -69,9 +69,11 @@ auto Emulator::run() -> void {
     std::thread timer_thread(timer_thread_body, this);
     
     try {
+        uint32_t count= 0;
         while(running) {
             
 #ifdef DEBUG
+            std::cout << "Instr number : " << count++ << std::endl;
             std::cout << std::hex << (int)read_register(pc) << std::endl;
             std::cout <<std::endl;print_registers();std::cout<<std::endl;
 #endif
@@ -463,14 +465,15 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
                         << "  displacement = " << std::hex << (int)D
                         << std::endl;
 #endif
-
+    
             write_register(
                 A, read_memory(read_register(B))
             );
-
+            
             write_register(
                 B,  read_register(B) + D
             );
+
 
             return;
         }
@@ -491,7 +494,7 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
             write_csr(
                  A, read_memory(read_register(B))
              );
-
+             
              write_register(
                  B,  read_register(B) + D
              );
@@ -901,6 +904,7 @@ auto Emulator::check_interrupts() -> void {
         write_memory(
             read_register(sp), read_register(pc)
         );
+        
 
         write_csr(
             status, read_csr(status) & ~Emulator::interrupt_gl
