@@ -6,6 +6,7 @@
 
 #include "../../../inc/asembler/asm_actions/instruction_actions.hpp"
 #include "../../../inc/asembler/asembler.hpp"
+#include <cstdint>
 #include <iostream>
 #include <cmath>
 
@@ -1016,9 +1017,9 @@ auto instruction_ld::execute() -> void {
                     instruction_ld::op_code,
                     instruction_ld::reg_ind_disp, 
                     gpr_d,
-                    static_cast<uint8_t>(REGISTERS::PC),
+                    gpr_d,
                     0,
-                    4
+                    0
                 )
             );
             return;
@@ -1204,61 +1205,56 @@ auto instruction_st::execute() -> void {
                 return;
             }
 
-            // We have to add 2 isntruction becouse we dont have mem[mem[]]
-            // PREETY SURE THIS HAS TO BE DELETED
-            // instruction_ld get_my_literal = {
-            //     std::variant<std::string, int32_t>(literal),
-            //     0,
-            //     gpr_d,
-            //     OPERANDS::D_LIT
-            // };
-            // get_my_literal.execute();
-    
-
-            // Literal value is inside reg_d now (at least should be)
+            // Literal doesnt fit into 12bit so we have to reserve 4B and read from it
 
             section.binary_data.add_instruction (
                 combine(
                     instruction_st::op_code,
                     instruction_st::mem_mem_gpr, 
-                    gpr_d,
+                    static_cast<uint8_t>(REGISTERS::PC),
                     0,
                     gpr_s,
-                    0
+                    4
                 )
             );
+            
+            // ld/jmp/<pool>
+
+            add_leap();
+            reserve_4B(literal);
             return;
         }
         break;
     case OPERANDS::SYM:
         {
             auto _symbol = std::get<std::string>(symbol_or_literal);
-
-            // First I need to get symbol into my register so I could dobule inderect
-            // After I have it in register I can go mem[reg] and do the final part
-            // Getting symbol to register might require pool so get_my_symbol can couse that
-
-            instruction_ld get_my_symbol = {
-                    std::variant<std::string, int32_t>(_symbol),
-                    0,
-                    gpr_d,
-                    OPERANDS::D_SYM
-            };
-
-            get_my_symbol.execute();
-
-            // We have symbol in reg_d
+            
+            
+            // Because we have intstruction for store that can red mem[mem[]]
+            // We can use said isntruction to get our symbol value
+            // We reserve space st/jmp/<4B pool>
 
             section.binary_data.add_instruction (
                 combine(
                     instruction_st::op_code,
-                    instruction_st::mem_gpr, 
-                    gpr_d,
+                    instruction_st::mem_mem_gpr, 
+                    static_cast<uint8_t>(REGISTERS::PC),
                     0,
                     gpr_s,
-                    0
+                    4
                 )
             );
+            
+            // Symbol not defined, we have to leave reloaciton data
+
+            add_leap();
+            section.add_relocation(
+                Asembler::get_section_counter(),
+                RELOCATION_TYPE::ABS32,
+                _symbol,
+                0
+            );
+            reserve_4B(0);
             return;
         }
         break;
@@ -1281,7 +1277,7 @@ auto instruction_st::execute() -> void {
             section.binary_data.add_instruction (
                 combine(
                     instruction_st::op_code,
-                    instruction_st::mem_mem_gpr, 
+                    instruction_st::mem_gpr, 
                     gpr_d,
                     0,
                     gpr_s,

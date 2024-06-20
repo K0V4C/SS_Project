@@ -48,6 +48,7 @@ debug: emulator_debug linker_debug asembler_debug
 clean:
 	rm -f linker
 	rm -f assembler
+	rm -f emulator
 	rm -f bison_gen.tab.cpp bison_gen.tab.hpp
 	rm -f lex.yy.c
 	rm -f *.o

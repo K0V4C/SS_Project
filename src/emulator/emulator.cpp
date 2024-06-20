@@ -1,9 +1,7 @@
-#include "../../inc/emulator/instruction.hpp"
 #include "../../inc/emulator/emulator.hpp"
+#include "../../inc/emulator/instruction.hpp"
 #include "../../inc/emulator/external.hpp"
 
-
-#include <exception>
 #include <iomanip>
 #include <cstdint>
 #include <fstream>
@@ -104,12 +102,17 @@ auto Emulator::run() -> void {
 
 auto Emulator::write_memory(uint32_t addr, uint32_t data) -> void {
     
+    // std::cout << "writing to memory: " << addr << " | this data: " << data << std::endl;
+    
     memory[addr]     = (data & 0xff000000) >> 24;
     memory[addr + 1] = (data & 0x00ff0000) >> 16;
     memory[addr + 2] = (data & 0x0000ff00) >> 8;
     memory[addr + 3] = (data & 0x000000ff) >> 0;
     
-    _terminal.write_val(data);
+    // This doenst work for some reason
+    // if(addr == 0xFFFFFF00) {
+    //     _terminal.write_val(data);
+    // }
 }
 auto Emulator::read_instruction() -> uint32_t {
     
@@ -126,7 +129,7 @@ auto Emulator::read_instruction() -> uint32_t {
 }
 
 auto Emulator::read_memory(uint32_t addr) -> uint32_t{
-    uint32_t insturction_raw = memory[addr]                 ;
+    uint32_t insturction_raw =                  memory[addr    ];
     insturction_raw = (insturction_raw << 8 ) | memory[addr + 1];
     insturction_raw = (insturction_raw << 8 ) | memory[addr + 2];
     insturction_raw = (insturction_raw << 8 ) | memory[addr + 3];
@@ -806,13 +809,13 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
             return;
         }
 
-        case instruction_type::_st_12b: {
+        case instruction_type::_st_mem: {
             
             
 #ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
-                        << "  ST 12b INSTRUCION" 
+                        << "  ST mem INSTRUCION" 
                         << "  register(" << std::hex << (int)A << ") = " << std::hex << (int)read_register(A)
                         << "  register(" << std::hex << (int)B << ") = " << std::hex << (int)read_register(B)
                         << "  register(" << std::hex << (int)C << ") = " << std::hex << (int)read_register(C)
@@ -828,20 +831,20 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
             return;
         }
 
-        case instruction_type::_st_32b: {
+        case instruction_type::_st_mem_mem: {
             
             
 #ifdef DEBUG      
             std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
                         << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
-                        << "  ST 32b INSTRUCION" 
+                        << "  ST MEM MEM INSTRUCION" 
                         << "  register(" << std::hex << (int)A << ") = " << std::hex << (int)read_register(A)
                         << "  register(" << std::hex << (int)B << ") = " << std::hex << (int)read_register(B)
                         << "  register(" << std::hex << (int)C << ") = " << std::hex << (int)read_register(C)
                         << "  displacement = " << std::hex << (int)D
                         << std::endl;
 #endif
-
+            
             write_memory(
                 read_memory(read_register(A) + read_register(B) + D)
                 , read_register(C)
@@ -931,7 +934,7 @@ auto Emulator::print_registers() -> void {
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
             std::cout   << "r" << std::setw(2) << std::setfill(' ') << std::left << std::dec << i*4+j
-                        << "=0x" << std::setw(8) << std::setfill('0') << std::hex << gpr[i*4+j]
+                        << "=0x" << std::setw(8) << std::setfill('0') << std::hex << std::right<< gpr[i*4+j]
                         << "        ";
         }
         std::cout << std::endl;
