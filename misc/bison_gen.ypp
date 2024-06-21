@@ -777,6 +777,7 @@ equ_directive:
         /* NOT DONE AND MAYBE WILL NEVER BE*/
 
         auto& c = Collector::get_instance();
+        
         c.clear_symbols_and_literals();
     }
 ;

@@ -315,10 +315,10 @@ auto Linker::resolve_everything() -> void {
                         
              uint32_t relocated_value = get_symbol_value(relocation.symbol_name) + relocation.addend;
                 
-             whole_file[relocation.offset + section_offset    ] = (relocated_value & 0xff000000) >> 24;
-             whole_file[relocation.offset + section_offset + 1] = (relocated_value & 0x00ff0000) >> 16;
-             whole_file[relocation.offset + section_offset + 2] = (relocated_value & 0x0000ff00) >>  8;
-             whole_file[relocation.offset + section_offset + 3] = (relocated_value & 0x000000ff) >>  0;
+             whole_file[relocation.offset + section_offset + 3] = (relocated_value & 0xff000000) >> 24;
+             whole_file[relocation.offset + section_offset + 2] = (relocated_value & 0x00ff0000) >> 16;
+             whole_file[relocation.offset + section_offset + 1] = (relocated_value & 0x0000ff00) >>  8;
+             whole_file[relocation.offset + section_offset + 0] = (relocated_value & 0x000000ff) >>  0;
              
              // std::cout  << std::endl << std::hex << (int) whole_file[0x4000000c] << " "
              //            << std::hex << (int)whole_file[0x4000000c + 1] << " "

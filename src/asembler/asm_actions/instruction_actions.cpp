@@ -58,13 +58,8 @@ auto add_leap() -> void {
 auto reserve_4B(uint32_t literal) -> void {
 
     auto& section = Asembler::get_current_section();
-    
-    uint32_t flip = (literal & 0xff)        << 24    |
-                    (literal & 0xff00)      << 8     |
-                    (literal & 0xff0000)    >> 8     |
-                    (literal & 0xff000000)  >> 24    ;
                 
-    section.binary_data.add_instruction(flip);
+    section.binary_data.add_instruction(literal);
     
 }
 
@@ -1039,7 +1034,7 @@ auto instruction_ld::execute() -> void {
             auto literal = std::get<int32_t>(symbol_or_literal);
 
             // This is if literal can be placed inside displacement
-            if(literal < std::pow(2, 11)) {
+            if(literal > std::pow(-2, 11) and literal < std::pow(2, 11)) {
                 section.binary_data.add_instruction (
                     combine(
                         instruction_ld::op_code,
@@ -1194,11 +1189,13 @@ auto instruction_st::execute() -> void {
             auto literal = std::get<int32_t>(symbol_or_literal);
 
             // This is if literal can be placed inside displacement
-            if(literal < std::pow(2, 11)) {
+        
+            
+            if(std::abs(literal) < std::pow(2, 11)) {
                 section.binary_data.add_instruction (
                     combine(
-                        instruction_ld::op_code,
-                        instruction_ld::reg_ind_disp, 
+                        instruction_st::op_code,
+                        instruction_st::mem_gpr,
                         0,
                         0,
                         gpr_s,

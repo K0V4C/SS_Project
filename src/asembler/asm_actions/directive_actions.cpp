@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <variant>
+#include <algorithm>
 
 //
 //
@@ -191,7 +192,10 @@ directive_ascii::directive_ascii(std::string str)
     : ascii_string(str) {}
 
 auto directive_ascii::execute() -> void {
-
+    
+    // remove "
+    ascii_string.erase(remove(ascii_string.begin(), ascii_string.end(), '"'), ascii_string.end()); 
+    
     auto& section = Asembler::get_current_section();
     for(const auto character : ascii_string) {
         section.binary_data.add_byte(

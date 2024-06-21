@@ -126,7 +126,11 @@ csrwr       {std::string new_token("CSRRW"); Parser::log_token(new_token); retur
                 return HEX_NUM;
             }
 
-{string}    {std::string new_token("STRING"); Parser::log_token(new_token); return STRING;}
+{string}    {
+                std::string new_token("STRING"); Parser::log_token(new_token);
+                yylval.sym = yytext;
+                return STRING;
+            }
 
 <<EOF>>     {std::string new_token("END_OF_FILE"); Parser::log_token(new_token); return END_OF_FILE;}
 

@@ -36,7 +36,7 @@ auto main(int argc, char** argv) -> int {
     try {
     asm_control.asemble();
     } catch (std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        // std::cerr << e.what() << std::endl;
     }
 
     try{
