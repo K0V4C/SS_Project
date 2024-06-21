@@ -14,9 +14,9 @@ auto terminal_thread_body(Emulator *emu) -> void {
     
     while(!emu->die) {
         uint8_t val = emu->_terminal.read_val();
-        emu->write_term_in(val << 24);
+        emu->write_term_in(val);
         
-        emu->interrupt_register |= Emulator::timer;
+        emu->interrupt_register |= Emulator::term;
     }
     
 }

@@ -1,4 +1,5 @@
 #include "../../inc/emulator/terminal.hpp"
+#include <cstdio>
 
 Terminal::Terminal() {
     // Get current terminal settings
@@ -23,7 +24,7 @@ Terminal::Terminal() {
 }
     
 auto Terminal::write_val(uint32_t val) -> void {
-    uint8_t out = (val >> 24);
+    uint8_t out = (val & 0x0ff);
     if (write(STDIN_FILENO, &val, 1) != 1) {
         std::cerr << "Error writing charater";
         exit(EXIT_FAILURE);

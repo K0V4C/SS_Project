@@ -20,23 +20,22 @@ public:
 
     static constexpr uint32_t num_of_regs = 16;
 
+    // These are masks for status register
     static constexpr uint32_t timer_mask    = (0x00'00'00'01);
     static constexpr uint32_t terminal_mask = (0x00'00'00'02);
     static constexpr uint32_t interrupt_gl  = (0x00'00'00'04);
     
+    // These are masks for cause
     static constexpr uint32_t cause_il_ins  = 0x00'00'00'01;
     static constexpr uint32_t cause_timer   = 0x00'00'00'02;
     static constexpr uint32_t cause_term    = 0x00'00'00'03;
     static constexpr uint32_t cause_soft    = 0x00'00'00'04;
     
+    // These are mask for irq (interrupt_register)
     static constexpr uint32_t il_ins  = 0x00'00'00'01;
     static constexpr uint32_t timer   = 0x00'00'00'02;
     static constexpr uint32_t term    = 0x00'00'00'04;
     static constexpr uint32_t soft    = 0x00'00'00'08;
-    
-    uint32_t interrupt_register         = 0;
-    
-
 
     auto load_data() -> void;
     auto run() -> void;
@@ -65,6 +64,7 @@ public:
     
     std::array<uint32_t, Emulator::num_of_regs> gpr;
     std::array<uint32_t, 3> csr;
+    uint32_t interrupt_register = 0;
     
     Terminal _terminal;
     

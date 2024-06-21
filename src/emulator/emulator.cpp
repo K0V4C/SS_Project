@@ -110,9 +110,9 @@ auto Emulator::write_memory(uint32_t addr, uint32_t data) -> void {
     memory[addr + 3] = (data & 0x000000ff) >> 0;
     
     // This doenst work for some reason
-    // if(addr == 0xFFFFFF00) {
-    //     _terminal.write_val(data);
-    // }
+    if(addr == 0xFFFFFF00) {
+        _terminal.write_val(data);
+    }
 }
 auto Emulator::read_instruction() -> uint32_t {
     
@@ -905,13 +905,13 @@ auto Emulator::check_interrupts() -> void {
         } else if(interrupt_register & Emulator::timer
                     and !(read_csr(status) & Emulator::interrupt_gl) 
                     and !(read_csr(status) & Emulator::timer_mask)) {
-
+                        
             write_csr(cause, Emulator::cause_timer);
             interrupt_register ^= Emulator::timer;
 
         }
         
-        // push cause
+        // push status
         write_register(
             sp, read_register(sp) - 4
         );
