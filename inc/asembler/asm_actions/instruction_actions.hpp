@@ -571,6 +571,8 @@ struct instruction_ld : public action {
     static uint8_t constexpr op_code      = 0b1001;
     static uint8_t constexpr reg_disp     = 0b0001;
     static uint8_t constexpr reg_ind_disp = 0b0010;
+    
+    static uint8_t constexpr csr_from_stack= 0b0110;
 
 private:
         std::variant<std::string, int32_t> symbol_or_literal;

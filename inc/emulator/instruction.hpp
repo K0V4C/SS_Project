@@ -50,6 +50,7 @@ struct instruction_type {
     
     static constexpr uint32_t _ld_12b           = 0b1001'0001'0000'0000'0000'0000'0000'0000;
     static constexpr uint32_t _ld_32b           = 0b1001'0010'0000'0000'0000'0000'0000'0000;
+    static constexpr uint32_t _csr_from_stack   = 0b1001'0110'0000'0000'0000'0000'0000'0000;
     
     static constexpr uint32_t _st_mem           = 0b1000'0000'0000'0000'0000'0000'0000'0000;
     static constexpr uint32_t _st_mem_mem       = 0b1000'0010'0000'0000'0000'0000'0000'0000;  

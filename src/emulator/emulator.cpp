@@ -808,6 +808,25 @@ auto Emulator::execute_instruction(uint32_t instruction_raw) -> void {
 
             return;
         }
+        
+        case instruction_type::_csr_from_stack: 
+        {
+#ifdef DEBUG      
+            std::cout   << "PC VALUE : "  << std::hex << read_register(pc)
+                        << "  RAW INSTRUCTION : " << std::hex << instruction_raw 
+                        << "  CSR FROM STACK INSTRUCION" 
+                        << "  register(" << std::hex << (int)A << ") = " << std::hex << (int)read_register(A)
+                        << "  register(" << std::hex << (int)B << ") = " << std::hex << (int)read_register(B)
+                        << "  register(" << std::hex << (int)C << ") = " << std::hex << (int)read_register(C)
+                        << "  displacement = " << std::hex << (int)D
+                        << std::endl;
+#endif
+            
+            write_csr(
+                A, read_memory(read_register(B) + read_register(C) + D)
+            );
+            
+        }
 
         case instruction_type::_st_mem: {
             
@@ -891,15 +910,17 @@ auto Emulator::check_interrupts() -> void {
             interrupt_register ^= Emulator::timer;
 
         }
-
+        
+        // push cause
         write_register(
             sp, read_register(sp) - 4
         );
 
         write_memory(
-            read_register(sp), read_register(cause)
+            read_register(sp), read_register(status)
         );
-
+        
+        // push pc
         write_register(
             sp, read_register(sp) - 4
         );
@@ -908,7 +929,7 @@ auto Emulator::check_interrupts() -> void {
             read_register(sp), read_register(pc)
         );
         
-
+        
         write_csr(
             status, read_csr(status) & ~Emulator::interrupt_gl
         );

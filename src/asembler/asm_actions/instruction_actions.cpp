@@ -131,27 +131,36 @@ instruction_iret::instruction_iret(){}
 auto instruction_iret::execute() -> void {
    
     auto& section = Asembler::get_current_section();
-
+    
+    
+    
+    // We are pushing onto stack cause and after that pc
+    // We need to simuliate it as
+    // sp + 8
+    // load status
+    // load pc
+    
+    // Read status
     section.binary_data.add_instruction(
         combine(
-  
-                instruction_iret::op_code,
-                instruction_iret::pop_pc,
+            instruction_ld::op_code,
+            instruction_ld::csr_from_stack,
+            static_cast<uint8_t>(REGISTERS::STATUS),
+            0,
+            static_cast<uint8_t>(REGISTERS::SP),
+            4
+        )
+    );
+
+    // Pop pc and inc by 8
+    section.binary_data.add_instruction(
+        combine(
+                instruction_pop::op_code,
+                instruction_pop::mode,
                 static_cast<uint8_t>(REGISTERS::PC),
                 static_cast<uint8_t>(REGISTERS::SP),
                 0,
-                4
-            )
-    );
-
-    section.binary_data.add_instruction(
-        combine(
-                instruction_iret::op_code,
-                instruction_iret::pop_status,
-                static_cast<uint8_t>(REGISTERS::STATUS),
-                static_cast<uint8_t>(REGISTERS::SP),
-                0,
-                4
+                8
             )
     );
 }
@@ -1102,7 +1111,6 @@ auto instruction_ld::execute() -> void {
                     0,
                     0
                 )
-
             );
         }
         break;  

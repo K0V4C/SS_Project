@@ -8,3 +8,4 @@
 *.txt
 bison_gen*
 lex*
+program.hex
