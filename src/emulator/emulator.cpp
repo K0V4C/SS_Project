@@ -102,14 +102,12 @@ auto Emulator::run() -> void {
 
 auto Emulator::write_memory(uint32_t addr, uint32_t data) -> void {
     
-    // std::cout << "writing to memory: " << addr << " | this data: " << data << std::endl;
-    
     memory[addr]     = (data & 0xff000000) >> 24;
     memory[addr + 1] = (data & 0x00ff0000) >> 16;
     memory[addr + 2] = (data & 0x0000ff00) >> 8;
     memory[addr + 3] = (data & 0x000000ff) >> 0;
     
-    // This doenst work for some reason
+    // write to terminal
     if(addr == 0xFFFFFF00) {
         _terminal.write_val(data);
     }

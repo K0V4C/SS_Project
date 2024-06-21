@@ -39,8 +39,6 @@ auto Terminal::read_val() -> uint8_t {
     }
     return ch;
 }
-    
-    
 
 Terminal::~Terminal() {
     // Restore original terminal settings

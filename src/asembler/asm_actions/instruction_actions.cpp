@@ -1038,11 +1038,6 @@ auto instruction_ld::execute() -> void {
         {
             auto literal = std::get<int32_t>(symbol_or_literal);
 
-            // if (literal < 0) {
-            //     throw std::runtime_error("ld_err: literal can't be a negative address");
-            // }
-
-            // TODO; maybe delete this
             // This is if literal can be placed inside displacement
             if(literal < std::pow(2, 11)) {
                 section.binary_data.add_instruction (
