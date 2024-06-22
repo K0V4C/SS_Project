@@ -145,6 +145,65 @@ auto Asembler::backpatch() -> void {
 
 }
 
+auto Asembler::generate_txt_file(std::string file_name) -> void {
+    
+    file_name.pop_back();
+    
+    file_name += "txt";
+    
+    std::ofstream txt_file(file_name, std::ios::out);
+    
+    // Symbol table
+    // 
+
+    txt_file << "Symbol table:\n";
+
+    {
+        txt_file   << std::setw(5)     << std::left << "idx"   << " | "
+                    << std::setw(20)    << std::left << "value" << " | "
+                    << std::setw(5)     << std::left << "size"  << " | "
+                    << std::setw(10)    << std::left << "type"  << " | "
+                    << std::setw(10)    << std::left << "bind"  << " | "
+                    << std::setw(5)     << std::left << "ndx"   << " | "
+                    << std::setw(36)    << std::left << "name"  << " |\n";
+
+    }
+
+    for(auto& e: Asembler::symbol_table) {
+        txt_file << e.second << std::endl;
+    }
+    
+    txt_file << std::endl;
+    
+    for(int i = 0 ; i < 111; i+=1) {
+        txt_file << "=";
+    }
+    txt_file << std::endl;
+    
+    
+    // Section + Relocation table for that section
+    
+    txt_file << "\n\nSection Table:\n";
+    {
+        txt_file << std::setw(40) << std::left    << "section name"        << " | "
+                  << std::setw(20) << std::left    << "section idx "        << " | "
+                  << std::setw(43) << std::left    << "Rel Under Section"   << " |\n";
+    }
+
+    {
+        for(auto& e : Asembler::section_table) {
+            txt_file << e.second << std::endl;
+        }
+    }
+    
+    txt_file << std::endl;
+    
+    for(int i = 0 ; i < 111; i+=1) {
+        txt_file << "=";
+    }
+    txt_file << std::endl;
+}
+
 auto Asembler::serialize(std::string file_name) -> void {
 
     std::ofstream binary_file(file_name, std::ios::out | std::ios::binary);

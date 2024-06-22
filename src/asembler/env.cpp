@@ -26,6 +26,8 @@ auto env::input_file() const -> std::string {
 }
 
 auto env::output_file() const -> std::string {
+    
+    // TODO: make this work every time
 
     if(cmd_args.size() == 1) {
         throw std::runtime_error("INPUT FILE NOT DEFINED");

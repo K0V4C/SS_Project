@@ -306,12 +306,6 @@ auto Linker::resolve_everything() -> void {
          uint32_t section_offset = get_symbol_value(section.second.name);
 
          for(auto& relocation : section.second.relocations) {
-             
-             // std::cout  << relocation.symbol_name << " : " 
-             //            << "fixing address : " << std::hex << relocation.offset
-             //            << "  wtih : "
-             //            << std::hex <<  get_symbol_value(relocation.symbol_name) 
-             //            << " + " << std::hex <<  relocation.addend << std::endl;
                         
              uint32_t relocated_value = get_symbol_value(relocation.symbol_name) + relocation.addend;
                 
@@ -320,10 +314,6 @@ auto Linker::resolve_everything() -> void {
              whole_file[relocation.offset + section_offset + 1] = (relocated_value & 0x0000ff00) >>  8;
              whole_file[relocation.offset + section_offset + 0] = (relocated_value & 0x000000ff) >>  0;
              
-             // std::cout  << std::endl << std::hex << (int) whole_file[0x4000000c] << " "
-             //            << std::hex << (int)whole_file[0x4000000c + 1] << " "
-             //            << std::hex << (int) whole_file[0x4000000c + 2] << " "
-             //            << std::hex << (int) whole_file[0x4000000c + 3] << " "    << std::endl;
              resolved += 1;
          }
 

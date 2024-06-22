@@ -50,7 +50,8 @@ auto main(int argc, char** argv) -> int {
     Asembler::print_symbol_table();
     Asembler::print_forward_table();
 #endif
-
+    
+    Asembler::generate_txt_file(env_obj.output_file());
     Asembler::serialize(env_obj.output_file());
 
     return 0;

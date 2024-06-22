@@ -29,7 +29,7 @@ auto directive_global::execute() -> void {
         // If it exists just set its bind to symbol_bind 
         if(it != Asembler::symbol_table.end()) { 
             
-            Asembler::symbol_table[symbol].symbol_bind = SYMBOL_BIND::EXTERN;
+            Asembler::symbol_table[symbol].symbol_bind = SYMBOL_BIND::GLOBAL;
 
         } else {
             

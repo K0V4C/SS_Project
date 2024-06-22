@@ -70,7 +70,7 @@ public:
     static std::map<std::string, section_struct> section_table;
     static auto print_section_table() -> void;
 
-
+    static auto generate_txt_file(std::string file_name) -> void;
     static auto serialize(std::string file_name) -> void;
 
 };

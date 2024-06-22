@@ -49,11 +49,35 @@ std::ostream& operator<<(std::ostream& os, const section_struct& obj) {
     for(auto& rel : obj.relocations) {
         os << rel << std::endl;
     }
-
-
-    for(int i = 0; i < 111; i++ ) os << "^";
+    
+    for(int i = 0; i < 111; i+=1) {
+        os << "-";
+    }
+    
     os << std::endl;
-
+    
+    // Binary data
+    
+    os << "Binary data: \n";
+    
+    uint32_t counter = 0;
+    
+    for(uint8_t data : obj.binary_data.raw) {
+        
+        if(counter % 8 == 0) {
+            os << std::endl;
+            os << std::setw(8) << std::setfill('0') << std::hex << std::right << counter << " : ";
+            
+        }
+        
+        os << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(data);
+        os << " ";
+        
+        counter += 1;
+    }
+    
+    os << std::setfill(' ');
+    
     return os;
 }
 
