@@ -53,3 +53,4 @@ clean:
 	rm -f lex.yy.c
 	rm -f *.o
 	rm -f *.hex
+	rm -f *.txt

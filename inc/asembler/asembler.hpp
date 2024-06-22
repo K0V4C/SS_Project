@@ -38,29 +38,6 @@ public:
     static uint32_t next_symbol_idx;
     static auto print_symbol_table() -> void;
 
-
-    //
-    //
-    //  FORWARD TABLE
-    //
-    //
-
-    struct forward_struct {
-
-        forward_struct();
-        ~forward_struct();
-
-        std::string symbol_name;
-
-        std::vector<uint32_t> locations;
-
-        friend std::ostream& operator<<(std::ostream& os, const forward_struct& obj);
-    };
-
-    static auto link_symbol(std::string, uint32_t location) -> void;
-    static std::map<std::string, forward_struct> forward_table;
-    static auto print_forward_table() -> void;
-
     // Used to help find values
     static uint32_t next_section_idx;
 
