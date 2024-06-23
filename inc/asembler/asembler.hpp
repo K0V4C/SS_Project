@@ -13,7 +13,11 @@
 #include <memory>
 #include <iostream>
 #include <string>
+#include <variant>
 #include <vector>
+
+typedef std::pair<std::string, std::variant<std::string, int32_t>> sign_and_symbol;
+
 class Asembler {
 public:
 
@@ -22,17 +26,27 @@ public:
     auto asemble() -> void;
     auto backpatch() -> void;
 
-    auto symbol_exists(std::string) -> bool;
-    auto get_symbol(std::string) -> symbol_struct;
+    static auto symbol_exists(std::string) -> bool;
+    static auto symbol_is_defined(std::string) -> bool;
+    static auto get_symbol(std::string) -> symbol_struct;
+    static auto get_symbol_value(std::string sym) -> uint32_t;
+    
+    static auto section_exists(uint32_t) -> bool;
+    static auto get_section(uint32_t) -> section_struct;
+    static auto get_section_idx(std::string) -> uint32_t;
+    static auto get_section_name(uint32_t ndx) -> std::string;
 
-    auto section_exists(uint32_t) -> bool;
-    auto get_section(uint32_t) -> section_struct;
 
     ~Asembler();
 
     // Used to do instructions and also directives
     static std::vector<std::unique_ptr<action>> file_actions;
-
+    
+    // Structures for equ directive
+    
+    static std::map<std::string, std::vector<sign_and_symbol>> equ_table;
+    
+    static auto is_calculatable(std::vector<sign_and_symbol>&) -> bool;
 
     static std::map<std::string, symbol_struct> symbol_table;
     static uint32_t next_symbol_idx;

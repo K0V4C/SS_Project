@@ -20,6 +20,10 @@ public:
     auto add_symbol_or_literal(sym_or_lit) -> void;
     auto get_symbols_and_literals() -> std::vector<sym_or_lit>;
     auto clear_symbols_and_literals() -> void;
+    
+    auto append_operation(std::string) ->void;
+    auto get_operation_list() -> std::vector<std::string>&;
+    auto clear_operations() -> void;
 
 
     Collector(Collector&) = delete;
@@ -39,6 +43,7 @@ protected:
                              
     std::vector<uint8_t> gpr_regs;
     std::vector<sym_or_lit> symbols_and_literals;
+    std::vector<std::string> operations;
 
 
     Collector();

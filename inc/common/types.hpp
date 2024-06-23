@@ -18,7 +18,8 @@ enum class SYMBOL_BIND {
 const char* symbol_bind_2_string(SYMBOL_BIND s);
 
 enum class RELOCATION_TYPE {
-    ABS32
+    ABS32,
+    EQU_FILE_LOCAL
 };
 
 const char* relocation_type_2_string(RELOCATION_TYPE s);

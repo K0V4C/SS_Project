@@ -31,7 +31,8 @@ const char* relocation_type_2_string(RELOCATION_TYPE s){
 
     const std::map<RELOCATION_TYPE, const char*> enum_strings
     {
-        {RELOCATION_TYPE::ABS32, "ABS32"}
+        {RELOCATION_TYPE::ABS32, "ABS32"},
+        {RELOCATION_TYPE::EQU_FILE_LOCAL, "EQU_FILE_LOCAL"}
     };
    
     auto it  = enum_strings.find(s);

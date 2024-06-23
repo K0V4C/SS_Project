@@ -92,14 +92,15 @@ private:
 
 struct directive_equ: public action {
 
-    directive_equ(std::vector<std::variant<std::string,int32_t>>);
+    directive_equ(std::vector<std::variant<std::string,int32_t>>, std::vector<std::string> signs);
 
     virtual auto execute() -> void override;
 
     virtual ~directive_equ();
 
 private:
-
+    
+    std::vector<std::string> signs;
     std::vector<std::variant<std::string,int32_t>> symbols_and_literals;
 };
 

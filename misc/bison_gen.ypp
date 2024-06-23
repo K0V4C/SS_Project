@@ -773,14 +773,84 @@ ascii_directive:
     }
 ;
 equ_directive:
-    EQU symbols {
-        /* NOT DONE AND MAYBE WILL NEVER BE*/
-
+    EQU IDENTIFIER COMMA expr {
         auto& c = Collector::get_instance();
         
+        auto s_and_l = c.get_symbols_and_literals();
+        auto& ops     = c.get_operation_list();
+        
+        ops.insert(ops.begin(), "no_op");
+        s_and_l.insert(s_and_l.begin(), $2);
+        
+        Asembler::file_actions.push_back(
+            std::make_unique<directive_equ>(s_and_l, ops)
+        );
+        
+        c.clear_operations();
         c.clear_symbols_and_literals();
     }
 ;
+
+expr:
+    IDENTIFIER {
+
+    auto& c = Collector::get_instance();
+    
+    sym_or_lit new_element = std::string($1);
+    c.add_symbol_or_literal(new_element);
+    c.append_operation("+");
+
+    
+    }
+|   literal {
+
+    auto& c = Collector::get_instance();
+    
+    sym_or_lit new_element = $1;
+    c.add_symbol_or_literal(new_element);
+    c.append_operation("+");
+
+    }
+|   expr PLUS IDENTIFIER {
+
+    auto& c = Collector::get_instance();
+    
+    sym_or_lit new_element = std::string($3);
+    c.add_symbol_or_literal(new_element);
+    c.append_operation("+");
+
+    }
+|   expr MINUS IDENTIFIER {
+
+    auto& c = Collector::get_instance();
+    
+    sym_or_lit new_element = std::string($3);
+    c.add_symbol_or_literal(new_element);
+    c.append_operation("-");
+
+    }
+|   expr PLUS literal {
+
+    auto& c = Collector::get_instance();
+    
+    sym_or_lit new_element = $3;
+    c.add_symbol_or_literal(new_element);
+    c.append_operation("+");
+
+    }
+|   expr MINUS literal {
+
+    auto& c = Collector::get_instance();
+    
+    sym_or_lit new_element = $3;
+    c.add_symbol_or_literal(new_element);
+    c.append_operation("-");
+
+    }
+;
+
+
+
 end_directive:
     END {
         

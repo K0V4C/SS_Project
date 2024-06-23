@@ -13,8 +13,7 @@ label::label(std::string name) : symbol_name(name){}
 auto label::execute() -> void {
     
     // Check for redefinition
-    // TODO: check if it is good
-
+    
     auto it = Asembler::symbol_table.find(symbol_name);
     
     auto& section = Asembler::get_current_section();

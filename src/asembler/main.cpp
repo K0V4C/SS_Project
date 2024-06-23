@@ -36,7 +36,7 @@ auto main(int argc, char** argv) -> int {
     try {
     asm_control.asemble();
     } catch (std::runtime_error& e) {
-        // std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 
     try{
@@ -48,7 +48,6 @@ auto main(int argc, char** argv) -> int {
 #ifdef DEBUG
     Asembler::print_section_table();
     Asembler::print_symbol_table();
-    Asembler::print_forward_table();
 #endif
     
     Asembler::generate_txt_file(env_obj.output_file());

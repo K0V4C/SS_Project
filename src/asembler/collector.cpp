@@ -53,3 +53,21 @@ auto Collector::get_gpr_list() -> std::vector<uint8_t>  {
 
 auto Collector::clear_gpr_list() -> void { this->gpr_regs.clear(); }
 
+
+/*
+ *
+ *  WORKING WITH OPERATIONS FOR EQU
+ *
+ *
+*/
+
+auto Collector::append_operation(std::string new_operation) ->void {
+    this->operations.push_back(new_operation);
+}
+ auto Collector::get_operation_list() -> std::vector<std::string>& {
+     return operations;
+ }
+ auto Collector::clear_operations() -> void {
+     operations.clear();
+ }
+

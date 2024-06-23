@@ -7,6 +7,7 @@
 
 #include "../../../inc/asembler/asm_actions/directive_actions.hpp"
 #include "../../../inc/asembler/asembler.hpp"
+#include <atomic>
 #include <cstdint>
 #include <stdexcept>
 #include <variant>
@@ -217,11 +218,77 @@ directive_ascii::~directive_ascii(){}
 //      EQU
 //
 //
-directive_equ::directive_equ(std::vector<std::variant<std::string,int32_t>> list)
-    : symbols_and_literals(list) {}
+directive_equ::directive_equ(std::vector<std::variant<std::string,int32_t>> list, std::vector<std::string> signs)
+    : symbols_and_literals(list), signs(signs) {}
 
 auto directive_equ::execute() -> void {
-    // TODO:
+
+    auto& equ_table = Asembler::equ_table;
+    
+    if (symbols_and_literals.size() < 2) {
+        throw std::runtime_error("equ expression not valid");
+    }
+    
+    std::string working_on = std::get<std::string>(symbols_and_literals[0]);
+    
+    std::string symbol_name = working_on.substr(0, working_on.find(','));
+    
+    equ_table[
+        symbol_name
+    ] = {};
+    
+    for(int i = 1; i < symbols_and_literals.size(); i += 1 ) {
+        Asembler::equ_table[symbol_name].push_back({signs[i], symbols_and_literals[i]});
+    }
+    
+    // Define ASM section and add symbols to it
+  
+    // Check if already exist section ABS
+    
+    auto section_it = Asembler::section_table.find("ABS");
+    
+    if(section_it == Asembler::section_table.end()) {
+        
+        Asembler::section_table["ABS"] = {
+                Asembler::next_section_idx++,
+                "ABS" // empty relocation table at the start 
+        };
+        
+        // Also add it as a symbol
+        
+        if(Asembler::symbol_exists("ABS")) {
+            throw std::runtime_error("equ_dir : abs symbol already reserved");
+        }
+    
+        Asembler::symbol_table["ABS"] = {
+            Asembler::next_symbol_idx++,
+            0,
+            0,
+            SYMBOL_TYPE::SCTN,
+            SYMBOL_BIND::LOCAL,
+            Asembler::section_table["ABS"].section_idx,
+            "ABS"
+        };
+        
+    }
+    
+    // Adding symbols 
+    
+    if(Asembler::symbol_exists(symbol_name)) {
+        return;
+    }
+
+    // Create new symbol
+    Asembler::symbol_table[symbol_name] = {
+        Asembler::next_symbol_idx++,
+        0,
+        0,
+        SYMBOL_TYPE::NOTYP,
+        SYMBOL_BIND::LOCAL,
+        0, // currently undefined
+        symbol_name
+    }; 
+    
 }
 
 directive_equ::~directive_equ(){}
