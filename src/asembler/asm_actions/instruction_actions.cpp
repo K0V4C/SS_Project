@@ -1129,21 +1129,26 @@ auto instruction_ld::execute() -> void {
         {
 
             auto _symbol = std::get<std::string>(symbol_or_literal);
-            auto it = Asembler::symbol_table.find(_symbol);
 
-            // There is only one case when we can leave displacement for symbol
-            // That is is if is defined, in the same section and < 2^12
+            // We always leave a "local" relocation to resolve at end of assembly
             
-            if  ( 
-                it != Asembler::symbol_table.end() and 
-                Asembler::symbol_table[_symbol].symbol_bind == SYMBOL_BIND::ABSOLUTE
-            ) {    
-                // TODO:
-                return;
-            }
-
-            throw std::runtime_error("ld instruciton: symbol not absolute"); 
-
+            section.add_relocation(
+                Asembler::get_section_counter(),
+                RELOCATION_TYPE::EQU_FILE_LOCAL,
+                _symbol,
+                0
+            );
+                 
+            section.binary_data.add_instruction(
+                combine (
+                    instruction_ld::op_code,
+                    instruction_ld::reg_ind_disp,
+                    gpr_d,
+                    gpr_s,
+                    0,
+                    0 // If the repair is possible this here should be changed
+                )
+            );
         }
         break;
     default:
@@ -1310,24 +1315,26 @@ auto instruction_st::execute() -> void {
     case OPERANDS::REG_IND_DISP_SYM:
         {
             auto _symbol = std::get<std::string>(symbol_or_literal);
-            auto it = Asembler::symbol_table.find(_symbol);
             
-            std::cout << _symbol;
-            exit(0);
+            section.add_relocation(
+                Asembler::get_section_counter(),
+                RELOCATION_TYPE::EQU_FILE_LOCAL,
+                _symbol,
+                0
+            );
+                 
 
-            // There is only one case when we can leave displacement for symbol
-            // That is is if is defined, in the same section and < 2^12
+            section.binary_data.add_instruction(
+                combine (
+                    instruction_st::op_code,
+                    instruction_st::mem_gpr,
+                    gpr_d,
+                    0,
+                    gpr_s,
+                    0 // If the repair is possible this here should be fixed
+                )
+            );
             
-            if  ( 
-                it != Asembler::symbol_table.end() and 
-                Asembler::symbol_table[_symbol].symbol_bind == SYMBOL_BIND::ABSOLUTE and 
-                (Asembler::get_section_counter() - Asembler::symbol_table[_symbol].value) < std::pow(2,12)
-            ) {    
-                // TODO:
-                return;
-            }
-
-            throw std::runtime_error("ld instruciton: symbol not absolute"); 
         }
         break;
     default:

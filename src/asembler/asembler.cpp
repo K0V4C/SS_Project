@@ -300,12 +300,20 @@ auto Asembler::backpatch() -> void {
                    
             if(relocation.type == RELOCATION_TYPE::EQU_FILE_LOCAL) {
                 
+                auto _symbol = Asembler::get_symbol(relocation.symbol_name);
+                
+                auto _symbol_section = Asembler::get_section(_symbol.ndx);
+                
+                if(_symbol_section.name != "ABS") {
+                    throw std::runtime_error("1: backpatching_err: symbol value not known at asm time!");
+                }
+                
                 if(std::abs(static_cast<int32_t>(get_symbol_value(relocation.symbol_name))) > std::pow(2,12)) {
-                    throw std::runtime_error("symbol can't be placed inside 12bits");
+                    throw std::runtime_error("2: symbol can't be placed inside 12bits");
                 }
                 
                 if(fixed_equ_symbols.find(relocation.symbol_name) == fixed_equ_symbols.end()) {
-                    throw std::runtime_error("backpatching_err: symbol value not know at asm time!");
+                    throw std::runtime_error("3: backpatching_err: symbol value not know at asm time!");
                 }
                 
                 // Fix instruction
@@ -320,8 +328,8 @@ auto Asembler::backpatch() -> void {
                 
                 // this should fix instruction itself
             
-                section.binary_data.raw[offset + 0] |= second_nibble | third_nibble;
-                section.binary_data.raw[offset + 1] |= first_nibble;
+                section.binary_data.raw[offset + 3] |= second_nibble | third_nibble;
+                section.binary_data.raw[offset + 2] |= first_nibble;
                 
                 it = section.relocations.erase(it);
                 continue;

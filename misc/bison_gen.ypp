@@ -507,7 +507,6 @@ ld_instruction:
         
         if(std::holds_alternative<std::string>(sol)) {
         
-            std::cout << std::get<std::string>(sol);
             Asembler::file_actions.push_back(
                 std::make_unique<instruction_ld>(sol, gpr_regs[0], gpr_regs[1], OPERANDS::REG_IND_DISP_SYM)
             );

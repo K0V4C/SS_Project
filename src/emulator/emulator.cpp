@@ -68,6 +68,17 @@ auto Emulator::run() -> void {
 
     try {
         uint32_t count= 0;
+        
+        // Disable timer interrupt
+        write_csr(
+            status, read_csr(status) | timer_mask
+        );
+        
+        // Disable terminal
+        write_csr(
+            status, read_csr(status) | terminal_mask
+        );
+        
         while(running) {
 
 #ifdef DEBUG
