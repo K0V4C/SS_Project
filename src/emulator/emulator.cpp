@@ -69,15 +69,15 @@ auto Emulator::run() -> void {
     try {
         uint32_t count= 0;
         
-        // Disable timer interrupt
-        write_csr(
-            status, read_csr(status) | timer_mask
-        );
+        // // Disable timer interrupt
+        // write_csr(
+        //     status, read_csr(status) | timer_mask
+        // );
         
-        // Disable terminal
-        write_csr(
-            status, read_csr(status) | terminal_mask
-        );
+        // // Disable terminal
+        // write_csr(
+        //     status, read_csr(status) | terminal_mask
+        // );
         
         while(running) {
 
@@ -917,6 +917,8 @@ auto Emulator::check_interrupts() -> void {
             write_csr(cause, Emulator::cause_timer);
             interrupt_register ^= Emulator::timer;
 
+        } else {
+            return;
         }
 
         // push status
