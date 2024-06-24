@@ -6,7 +6,7 @@ PFLAGS = -d -t
 CFLAGS = -std=c++17
 ASM_FLAGS = -Ifl -Iinc/asembler/asm_actions -I/inc/common -I.
 LINKER_FLAGS = -Iinc/linker -I/inc/common -I.
-EMULATOR_FLAGS = -Iinc/emulator -I.
+EMULATOR_FLAGS = -Iinc/emulator -I. -pthread
 
 BISON_FILE = misc/bison_gen.ypp
 FLEX_FILE = misc/flex_gen.lpp

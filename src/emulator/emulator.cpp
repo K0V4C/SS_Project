@@ -27,6 +27,8 @@ Emulator::Emulator(std::string file_name)
         gpr[sp] = 0x0;
 
         interrupt_register = 0;
+        
+        running = true;
 
         // memory mapped registers
         for(uint32_t i = 0xffffff00; i < 0xffffffff; i++) {
